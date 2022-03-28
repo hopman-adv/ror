@@ -15,6 +15,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Entity
@@ -29,7 +30,7 @@ public class User {
 	private Long id;
 	
 	@NotBlank
-	@Size(max = 20)
+	@Pattern(regexp = "^[a-zA-Z0-9]{1,20}")
 	private String username;
 	
 	@NotBlank
