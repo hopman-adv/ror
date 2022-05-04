@@ -68,7 +68,7 @@ public class UserController {
 		user.setEmail(updateRequest.getEmail());
 		userRepository.save(user);
 		
-		return ResponseEntity.ok(new MessageResponse("User successfully!"));		
+		return ResponseEntity.ok(new MessageResponse("User successfully updated!"));
 	}
 
 }
