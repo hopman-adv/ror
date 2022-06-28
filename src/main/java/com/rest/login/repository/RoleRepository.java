@@ -12,4 +12,5 @@ import com.rest.login.models.Role;
 public interface RoleRepository extends JpaRepository<Role, Long>{
 
 	Optional<Role> findByName(ERole name);
+
 }

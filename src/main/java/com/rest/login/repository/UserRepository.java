@@ -12,9 +12,14 @@ import com.rest.login.models.User;
 public interface UserRepository extends JpaRepository<User, Long>{
 	Optional<User> findByUsername(String username);
 
+	@Override
+	Optional<User> findById(Long id);
+
 	List<User> findAll();
 	
 	Boolean existsByUsername(String username);
 	
 	Boolean existsByEmail(String email);
+
+
 }

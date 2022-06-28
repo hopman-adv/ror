@@ -28,7 +28,7 @@ import com.rest.login.security.services.UserDetailsServiceImpl;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	
 	  @Autowired
-	  UserDetailsServiceImpl userDetailsService;
+	  UserDetailsServiceImpl userDetailsServiceImpl;
 
 	  @Autowired
 	  private AuthEntryPointJwt unauthorizedHandler;
@@ -40,7 +40,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 
 	  @Override
 	  public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-	    authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+	    authenticationManagerBuilder.userDetailsService(userDetailsServiceImpl).passwordEncoder(passwordEncoder());
 	  }
 
 	  @Bean

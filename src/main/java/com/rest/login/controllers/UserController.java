@@ -5,9 +5,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.rest.login.dto.ClientDTO;
+import com.rest.login.models.Client;
+import com.rest.login.repository.ClientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
@@ -33,42 +38,45 @@ import com.rest.login.security.services.UserDetailsServiceImpl;
 @RequestMapping("/api/data")
 public class UserController {
 
-	@Autowired
-	UserRepository userRepository;
+    @Autowired
+    UserRepository userRepository;
 
-	@Autowired
-	private UserDetailsServiceImpl userDetailsService;
+    @Autowired
+    ClientRepository clientRepository;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
 
 
-	@GetMapping("/users/{username}")
-	@PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserName(authentication,#username)")
-	public EntityModel<UserDetails> getUserByUsername(@PathVariable String username) {
-		UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-		EntityModel<UserDetails> resource = EntityModel.of(userDetails);
+    @GetMapping("/users/{username}")
+    @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserName(authentication,#username)")
+    public EntityModel<UserDetails> getUserByUsername(@PathVariable String username) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        EntityModel<UserDetails> resource = EntityModel.of(userDetails);
 		/*Creating link to endpoint .getAllUsers() - /users
 		WebMvcLinkBuilder linkTo = 
 				linkTo(methodOn(this.getClass()).getAllUsers());
 		//Adding link with all-users label to resource
 		resource.add(linkTo.withRel("all-users"));
 		*/
-		return resource;
-	}
-	
-	@GetMapping("/users")
-	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-	public List<User> retriveAllUsers() {  
-		return userRepository.findAll();  
-	}
-	
-	@PutMapping("/users/{id}")
-	@PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
-	public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateRequest updateRequest) {
-		User user = userRepository.findById(id).get();
-		user.setUsername(updateRequest.getUsername());
-		user.setEmail(updateRequest.getEmail());
-		userRepository.save(user);
-		
-		return ResponseEntity.ok(new MessageResponse("User successfully updated!"));
-	}
+        return resource;
+    }
+
+    @GetMapping("/users")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public List<User> retriveAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @PutMapping("/users/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateRequest updateRequest) {
+        User user = userRepository.findById(id).get();
+        user.setUsername(updateRequest.getUsername());
+        user.setEmail(updateRequest.getEmail());
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new MessageResponse("User successfully updated!"));
+    }
 
 }
