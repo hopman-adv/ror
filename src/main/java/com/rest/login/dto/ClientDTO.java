@@ -6,16 +6,17 @@ import com.rest.login.models.User;
 public class ClientDTO {
 
     private Long id;
-    private String username;
+    private String name;
     private String email;
     private Long userId;
-    private User user;
+    private String description;
 
     public ClientDTO(Client client) {
         this.id = client.getId();
-        this.username = client.getUsername();
+        this.name = client.getName();
         this.email = client.getEmail();
         this.userId = client.getUser().getId();
+        this.description = client.getDescription();
     }
 
     public Long getId() {
@@ -26,12 +27,12 @@ public class ClientDTO {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
     public void setUsername(String username) {
-        this.username = username;
+        this.name = name;
     }
 
     public String getEmail() {
@@ -48,5 +49,13 @@ public class ClientDTO {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

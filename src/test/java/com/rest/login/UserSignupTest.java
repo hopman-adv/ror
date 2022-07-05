@@ -2,6 +2,7 @@ package com.rest.login;
 
 import com.rest.login.operations.UserOperations;
 import com.rest.login.payloads.TestUserPayload;
+import io.restassured.path.json.JsonPath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

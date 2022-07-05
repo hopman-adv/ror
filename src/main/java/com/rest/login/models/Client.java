@@ -1,11 +1,14 @@
 package com.rest.login.models;
 
+import com.rest.login.payload.request.AddClientRequest;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -17,8 +20,8 @@ public class Client {
 	private Long id;
 
 	@NotBlank
-	@Pattern(regexp = "^[a-zA-Z0-9]{1,20}")
-	private String username;
+	@Pattern(regexp = "^[a-žA-Ž0-9-_!? ]{1,20}")
+	private String name;
 
 	@Size(max = 50)
 	@Email
@@ -28,14 +31,54 @@ public class Client {
 	@JoinColumn(name = "user_id")
 	private User user;
 
+	@Size(max = 1500)
+	private String description;
+
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "id")
+	private List<Evaluation> evaluations;
+
 	public Client() {
 	}
-
-	public Client(@NotBlank @Size(max = 20) String username, @NotBlank @Size(max = 50) @Email String email, @NotBlank User user) {
+	public Client(User user) {
 		this.user = user;
-		this.username = username;
-		this.email = email;
 	}
+
+	public Client(@NotBlank @Size(max = 20) String name, @NotBlank @Size(max = 50) @Email String email, @NotBlank User user, String description, List<Evaluation> evaluations) {
+		this.user = user;
+		this.name = name;
+		this.email = email;
+		this.description = description;
+		this.evaluations = evaluations;
+	}
+
+	public static Client createFullClient(String name, String email, String description, User user) {
+		Client client = new Client(user);
+		client.setName(name);
+		client.setEmail(email);
+		client.setDescription(description);
+		return client;
+	}
+
+	public static Client createNameEmailClient(String name, String email, User user) {
+		Client client = new Client(user);
+		client.setName(name);
+		client.setEmail(email);
+		return client;
+	}
+
+	public static Client createNameDescriptionClient(String name, String description, User user) {
+		Client client = new Client(user);
+		client.setName(name);
+		client.setDescription(description);
+		return client;
+	}
+
+	public static Client createNameClient(String name, User user) {
+		Client client = new Client(user);
+		client.setName(name);
+		return client;
+	}
+
 
 	public Long getId() {
 		return id;
@@ -45,12 +88,12 @@ public class Client {
 		this.id = id;
 	}
 
-	public String getUsername() {
-		return username;
+	public String getName() {
+		return name;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getEmail() {
@@ -67,5 +110,21 @@ public class Client {
 
 	public void setUser(User user) {
 		this.user = user;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public List<Evaluation> getEvaluations() {
+		return evaluations;
+	}
+
+	public void setEvaluations(List<Evaluation> evaluations) {
+		this.evaluations = evaluations;
 	}
 }
