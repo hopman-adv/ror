@@ -47,18 +47,11 @@ public class UserController {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
-
     @GetMapping("/users/{username}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserName(authentication,#username)")
     public EntityModel<UserDetails> getUserByUsername(@PathVariable String username) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         EntityModel<UserDetails> resource = EntityModel.of(userDetails);
-		/*Creating link to endpoint .getAllUsers() - /users
-		WebMvcLinkBuilder linkTo = 
-				linkTo(methodOn(this.getClass()).getAllUsers());
-		//Adding link with all-users label to resource
-		resource.add(linkTo.withRel("all-users"));
-		*/
         return resource;
     }
 

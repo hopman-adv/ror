@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.time.Instant;
 import java.util.*;
@@ -64,4 +65,13 @@ public class ClientService {
 				.orElseThrow(() -> new NoSuchElementException("Error: Client not found!"));
 	}
 
+	public Client getClientById(Long clientId) {
+		Client client = null;
+		try {
+			client = clientRepository.findById(clientId).get();
+		} catch (EntityNotFoundException | NoSuchElementException e) {
+			return null;
+		}
+		return client;
+	}
 }

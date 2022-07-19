@@ -1,19 +1,16 @@
 package com.rest.login.security.services;
 
-import com.rest.login.dto.ClientDTO;
 import com.rest.login.dto.EvaluationDTO;
-import com.rest.login.models.Client;
-import com.rest.login.models.EStatus;
-import com.rest.login.models.Evaluation;
+import com.rest.login.models.*;
 import com.rest.login.payload.request.AddEvaluationRequest;
+import com.rest.login.repository.BoardRepository;
 import com.rest.login.repository.EvaluationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class EvaluationService {
@@ -38,9 +35,23 @@ public class EvaluationService {
     public Evaluation createBasicEvaluation(Client client) {
         Evaluation evaluation = new Evaluation();
         evaluation.setClient(client);
-        evaluation.setEvaluationStatus(EStatus.NEW);
-        return evaluation;
+
+        List<Board> list = createBoards(evaluation);
+        evaluation.setBoards(list);
+
+        return evaluationRepository.save(evaluation);
     }
+
+    public Evaluation createBasicEvaluationWithDescription(Client client, AddEvaluationRequest addEvaluationRequest) {
+        Evaluation evaluation = new Evaluation();
+        evaluation.setClient(client);
+        evaluation.setDescription_info(addEvaluationRequest.getDescription());
+        List<Board> list = createBoards(evaluation);
+        evaluation.setBoards(list);
+
+        return evaluationRepository.save(evaluation);
+    }
+
 
     public List<EvaluationDTO> getAllClientEvaluations(Long clientId) {
         return getAllEvaluationsDTO().stream()
@@ -48,4 +59,31 @@ public class EvaluationService {
                 .collect(Collectors.toList());
     }
 
+    private List<Board> createBoards(Evaluation evaluation) {
+        List<Board> boards = Stream.generate(() -> new Board(evaluation))
+                .limit(10)
+                .collect(Collectors.toList());
+
+        creatingAnswersForBoardList(boards);
+
+        return boards;
+    }
+
+    private List<Board> createBoards() {
+        List<Board> boards = Stream.generate(Board::new)
+                .limit(10)
+                .collect(Collectors.toList());
+
+        creatingAnswersForBoardList(boards);
+
+        return boards;
+    }
+
+    private void creatingAnswersForBoardList(List<Board> boards) {
+        boards.forEach(board -> {
+            List<Answer> ans = new ArrayList<>(List.of(new Answer(board)));
+            board.setAnswers(ans);
+        });
+
+    }
 }

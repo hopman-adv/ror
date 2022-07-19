@@ -20,7 +20,7 @@ public class Client {
 	private Long id;
 
 	@NotBlank
-	@Pattern(regexp = "^[a-žA-Ž0-9-_!? ]{1,20}")
+	@Pattern(regexp = "^[a-žA-Ž0-9-_!? ']{1,20}") //Validation for Czech and English names
 	private String name;
 
 	@Size(max = 50)

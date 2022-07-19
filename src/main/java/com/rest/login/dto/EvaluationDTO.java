@@ -13,7 +13,7 @@ public class EvaluationDTO {
     public EvaluationDTO(Evaluation evaluation) {
         this.id = evaluation.getId();
         this.status = evaluation.getEvaluationStatus();
-        this.description = evaluation.getDescription();
+        this.description = evaluation.getDescription_info();
         this.result = evaluation.getResult();
         this.clientId = evaluation.getClient().getId();
     }

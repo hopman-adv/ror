@@ -1,9 +1,11 @@
 package com.rest.login;
 
 import com.rest.login.data.UserSession;
+import com.rest.login.models.Board;
 import com.rest.login.operations.ClientOperations;
 import com.rest.login.operations.EvaluationOperations;
 import com.rest.login.operations.UserOperations;
+import com.rest.login.repository.BoardRepository;
 import groovy.util.logging.Slf4j;
 import io.restassured.path.json.JsonPath;
 import org.junit.jupiter.api.AfterEach;
@@ -15,6 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import static com.rest.login.UserSignupTest.USER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -23,8 +29,6 @@ import static com.rest.login.operations.EvaluationOperations.DESCRIPTION;
 @Slf4j
 @SpringBootTest
 public class EvaluationTest {
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     static String AUTH_URL = "https://localhost:8443/api/auth/";
     static String BASE_URL = "https://localhost:8443/api/data/";
@@ -41,6 +45,10 @@ public class EvaluationTest {
 
     @Autowired
     private EvaluationOperations evaluationOperations;
+
+    @Autowired
+    private BoardRepository boardRepository;
+
 
     Logger log = LoggerFactory.getLogger(EvaluationTest.class);
 
@@ -60,6 +68,7 @@ public class EvaluationTest {
         } else {
             Long id1 = client.getLong("id");
             Long id2 = client2.getLong("id");
+            userOperations.deleteAllBoards();
             userOperations.deleteEvaluationsFromClient(id1);
             userOperations.deleteEvaluationsFromClient(id2);
 
@@ -71,9 +80,8 @@ public class EvaluationTest {
 
     @Test
     void createEvaluationWithDescription() {
-        log.info(client.prettify());
         JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(client.getLong("id"));
-        log.info(evaluation.prettify());
+
         assertThat(evaluation.getString("evaluation.status"), equalTo("NEW"));
         assertThat(evaluation.getString("evaluation.description"), equalTo(DESCRIPTION));
         assertThat(evaluation.getString("evaluation.result"), equalTo(null));
@@ -137,4 +145,29 @@ public class EvaluationTest {
         log.info(json.prettify());
         assertThat(json.getString("message"), equalTo(NON_EXISTING_CLIENT_MESSAGE));
     }
+
+    @Test
+    void create2EvaluationsAndBoards() {
+        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(client.getLong("id"));
+        JsonPath evaluation2 = evaluationOperations.createEvaluationWithDescription(client.getLong("id"));
+
+        Long evaluationId = evaluation.getLong("evaluation.id");
+        List<Board> list = boardRepository.findByEvaluation_id(evaluationId);
+        long count = list.stream().filter(board -> Objects.equals(board.getEvaluation().getId(), evaluationId)).count();
+
+        assertThat(list.size(), equalTo(10));
+        assertThat(count, equalTo(10L));
+
+        Long evaluation2Id = evaluation2.getLong("evaluation.id");
+        List<Board> list2 = boardRepository.findByEvaluation_id(evaluation2Id);
+        long count2 = list2.stream().filter(board -> Objects.equals(board.getEvaluation().getId(), evaluation2Id)).count();
+
+        assertThat(list2.size(), equalTo(10));
+        assertThat(count2, equalTo(10L));
+
+        log.info(list.stream().map(Board::getId).collect(Collectors.toList()).toString());
+        log.info(list2.stream().map(Board::getId).collect(Collectors.toList()).toString());
+    }
+
+
 }

@@ -62,6 +62,8 @@ public class UserOperations {
     }
 
     public void deleteUserByUsernameAndClientId(String username, Long clientId) {
+        jdbcTemplate.execute("DELETE FROM ANSWERS");
+        jdbcTemplate.execute("DELETE FROM BOARDS");
         jdbcTemplate.execute("DELETE E FROM CLIENTS C JOIN EVALUATION_RECORDS E ON C.ID = E.CLIENT_ID WHERE C.ID = '"+clientId+"';");
         jdbcTemplate.execute("DELETE FROM CLIENTS WHERE ID = '"+clientId+"';");
         jdbcTemplate.execute("DELETE RT FROM REFRESHTOKEN RT JOIN USERS U ON U.ID=RT.USER_ID WHERE U.USERNAME = '"+username+"';");
@@ -77,6 +79,20 @@ public class UserOperations {
         jdbcTemplate.execute("DELETE FROM CLIENTS WHERE ID = '"+clientId+"';");
     }
 
+    public void deleteAllBoards() {
+        jdbcTemplate.execute("DELETE FROM ANSWERS");
+        jdbcTemplate.execute("DELETE FROM BOARDS");
+    }
+
+    public void deleteAll() {
+        jdbcTemplate.execute("DELETE FROM ANSWERS");
+        jdbcTemplate.execute("DELETE FROM BOARDS");
+        jdbcTemplate.execute("DELETE FROM evaluation_records");
+        jdbcTemplate.execute("DELETE FROM CLIENTS");
+        jdbcTemplate.execute("DELETE FROM USER_ROLES");
+        jdbcTemplate.execute("DELETE FROM refreshtoken");
+        jdbcTemplate.execute("DELETE FROM USERS");
+    }
 
     public void createTesterUser(String role, String email ,String username, String URL, String password) {
         Set<String> roles = new HashSet<String>();
@@ -116,5 +132,16 @@ public class UserOperations {
         userSession.saveUserSessionDataFromLoginRequest(json);
         return json;
     }
+
+    public JsonPath createAndLoginSecondTesterUser(String url) {
+        userSession.setSecondTesterUser();
+
+        createTesterUser("user", UserSession.USER2_EMAIL, UserSession.USER2_NAME, url + "signup", UserSession.USER2_PASSWORD);
+        userSession.saveSecondUserSession(userSession.USER2_NAME, userSession.USER2_EMAIL, userSession.USER2_PASSWORD);
+        JsonPath json = loginRequest(new LoginRequest(userSession.USER2_NAME, userSession.USER2_PASSWORD));
+        userSession.saveSecondUserSessionDataFromLoginRequest(json);
+        return json;
+    }
+
 
 }

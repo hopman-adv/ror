@@ -2,6 +2,7 @@ package com.rest.login.models;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 @Entity
 @Table(name = "evaluation_records")
@@ -12,11 +13,11 @@ public class Evaluation {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private EStatus evaluation_status;
+    @Column(columnDefinition = "varchar(20) default 'NEW'")
+    private EStatus evaluation_status = EStatus.NEW;
 
     @Size(max = 1500)
-    private String description;
+    private String description_info;
 
     @Size(max = 1500)
     private String result;
@@ -24,6 +25,9 @@ public class Evaluation {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "client_id")
     private Client client;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "id", cascade = CascadeType.ALL)
+    private List<Board> boards;
 
     public Evaluation() {
     }
@@ -36,20 +40,18 @@ public class Evaluation {
         this.id = id;
     }
 
-    public EStatus getEvaluationStatus() {
-        return evaluation_status;
-    }
+    public EStatus getEvaluationStatus() { return evaluation_status; }
 
     public void setEvaluationStatus(EStatus evaluation_status) {
         this.evaluation_status = evaluation_status;
     }
 
-    public String getDescription() {
-        return description;
+    public String getDescription_info() {
+        return description_info;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setDescription_info(String description_info) {
+        this.description_info = description_info;
     }
 
     public Client getClient() {
@@ -66,5 +68,13 @@ public class Evaluation {
 
     public void setResult(String result) {
         this.result = result;
+    }
+
+    public List<Board> getBoards() {
+        return boards;
+    }
+
+    public void setBoards(List<Board> boards) {
+        this.boards = boards;
     }
 }

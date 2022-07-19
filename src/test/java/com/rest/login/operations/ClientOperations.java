@@ -49,6 +49,17 @@ public class ClientOperations {
                 .jsonPath();
     }
 
+    private JsonPath addClient(AddClientRequest addClientRequest, String userId, String token) {
+        return given().header("Authorization", "Bearer "+ token)
+                .relaxedHTTPSValidation()
+                .contentType(ContentType.JSON)
+                .body(addClientRequest)
+                .when().
+                post("https://localhost:8443/api/data/users/{id}/add-client", userId)
+                .jsonPath();
+    }
+
+
     private JsonPath deleteClient(Long clientId) {
 
         return given().header("Authorization", "Bearer "+ TOKEN)
@@ -57,6 +68,16 @@ public class ClientOperations {
                 post("https://localhost:8443/api/data/users/{userId}/delete-client/{clientId}", USER_ID, clientId)
                 .jsonPath();
     }
+
+    private JsonPath deleteClient(Long clientId, Long userId, String token) {
+
+        return given().header("Authorization", "Bearer "+ token)
+                .relaxedHTTPSValidation()
+                .when().
+                post("https://localhost:8443/api/data/users/{userId}/delete-client/{clientId}", userId, clientId)
+                .jsonPath();
+    }
+
 
     private JsonPath editClient(Long clientId, AddClientRequest addClientRequest) {
 
@@ -69,6 +90,18 @@ public class ClientOperations {
                 .jsonPath();
     }
 
+    private JsonPath editClient(Long clientId, AddClientRequest addClientRequest, Long userId, String token) {
+
+        return given().header("Authorization", "Bearer "+ token)
+                .relaxedHTTPSValidation()
+                .contentType(ContentType.JSON)
+                .body(addClientRequest)
+                .when().
+                put("https://localhost:8443/api/data/users/{userId}/edit-client/{clientId}", userId, clientId)
+                .jsonPath();
+    }
+
+
     private JsonPath getClientByUserIdClientId(Long clientId) {
         return given().header("Authorization", "Bearer "+ TOKEN)
                 .relaxedHTTPSValidation()
@@ -78,19 +111,39 @@ public class ClientOperations {
                 .jsonPath();
     }
 
+    private JsonPath getClientByUserIdClientId(Long clientId, String userId, String token) {
+        return given().header("Authorization", "Bearer "+ token)
+                .relaxedHTTPSValidation()
+                .contentType(ContentType.JSON)
+                .when().
+                get("https://localhost:8443/api/data/users/{id}/clients/{clientId}", userId, clientId)
+                .jsonPath();
+    }
+
     public JsonPath checkClientByUserIdClientId(Long clientId) {
         JsonPath json = getClientByUserIdClientId(clientId);
         log.info(json.prettify());
         return json;
     }
 
-    //TODO
-    //CLient requests...
+    public JsonPath checkClientByUserIdClientId(Long clientId, String userId, String token) {
+        JsonPath json = getClientByUserIdClientId(clientId, userId, token);
+        log.info(json.prettify());
+        return json;
+    }
+
+    //TODO: Client requests...
 
     public JsonPath createAndReturnRandomNameClient() {
         String name = fake.getName();
         log.info("NAME: "+name);
         return addClient(createNameRequest(name));
+    }
+
+    public JsonPath createAndReturnRandomNameClient(String userId, String token) {
+        String name = fake.getName();
+        log.info("NAME: "+name);
+        return addClient(createNameRequest(name), userId, token);
     }
 
     public JsonPath createAndReturnRandomNameEmailClient() {
@@ -142,6 +195,5 @@ public class ClientOperations {
         log.info(json.prettify());
         return json;
     }
-
 
 }

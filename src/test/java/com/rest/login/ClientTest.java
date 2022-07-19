@@ -242,5 +242,4 @@ public class ClientTest {
         assertThat(updatedClientJson.getLong("userId"), equalTo(origUserId));
     }
 
-
 }
