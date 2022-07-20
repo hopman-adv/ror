@@ -50,7 +50,7 @@ public class EvaluationController {
         return evaluationService.getAllEvaluationsDTO();
     }
 
-    @GetMapping("/evaluation/{id}")
+    @GetMapping("/evaluations/{id}")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public Evaluation retrieveAnyEvaluationById(@PathVariable Long id) {
         return evaluationRepository.getById(id);
@@ -60,17 +60,7 @@ public class EvaluationController {
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
     public ResponseEntity<?> retrieveAllEvaluationsByClientId(@PathVariable Long userId, @PathVariable Long clientId) {
         Client client = clientService.getClientById(clientId);
-
-        if (client == null) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Client was not found."));
-        }
-        Long dbClientId = client.getId();
-        List<EvaluationDTO> evaluations = evaluationService.getAllClientEvaluations(dbClientId);
-
-        if (evaluations.isEmpty()) {
-            return ResponseEntity.ok(new MessageResponse("Error: Client does not have any evaluations created!"));
-        }
-        return ResponseEntity.ok().body(createMessageResponseWithEvaluationDTOs("Listing client's evaluations!", evaluations));
+        return evaluationService.getAllClientsEvaluations(client);
     }
 
     @GetMapping("/users/{userId}/clients/{clientId}/evaluations/{evalId}")
@@ -79,31 +69,15 @@ public class EvaluationController {
         return evaluationService.getEvaluationDTOByClientIdAndEvalId(clientId, evalId);
     }
 
-    @PostMapping(path = "/users/{id}/clients/{clientId}/add-evaluation", consumes = "application/json")
+    @PostMapping(path = "/users/{id}/clients/{clientId}/evaluations", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
     public ResponseEntity<MessageResponse> createEvaluation(@Valid @RequestBody AddEvaluationRequest addEvaluationRequest, @PathVariable Long id, @PathVariable Long clientId) {
-        Client client = clientService.getClientById(clientId);
-
-        if (client == null) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Client was not found."));
-        } else {
-            Evaluation evaluation = evaluationService.createBasicEvaluationWithDescription(client, addEvaluationRequest);
-
-            return ResponseEntity.ok().body(new MessageResponse("Evaluation added.", new EvaluationDTO(evaluation)));
-        }
+        return evaluationService.createEvaluation(clientId, addEvaluationRequest);
     }
 
-    @PostMapping(path = "/users/{id}/clients/{clientId}/add-evaluation")
+    @PostMapping(path = "/users/{id}/clients/{clientId}/evaluations")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
     public ResponseEntity<MessageResponse> createEvaluation(@PathVariable Long id, @PathVariable Long clientId) {
-        Client client = clientService.getClientById(clientId);
-
-        if (client == null) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Client was not found."));
-        } else {
-            Evaluation evaluation = evaluationService.createBasicEvaluation(client);
-
-            return ResponseEntity.ok().body(new MessageResponse("Evaluation added.", new EvaluationDTO(evaluation)));
-        }
+        return evaluationService.createEvaluation(clientId, null);
     }
 }

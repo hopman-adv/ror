@@ -3,20 +3,27 @@ package com.rest.login.security.services;
 import com.rest.login.dto.EvaluationDTO;
 import com.rest.login.models.*;
 import com.rest.login.payload.request.AddEvaluationRequest;
+import com.rest.login.payload.response.MessageResponse;
 import com.rest.login.repository.BoardRepository;
 import com.rest.login.repository.EvaluationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.rest.login.payload.response.MessageResponse.createMessageResponseWithEvaluationDTOs;
+
 @Service
 public class EvaluationService {
 
     @Autowired
-    EvaluationRepository evaluationRepository;
+    private EvaluationRepository evaluationRepository;
+
+    @Autowired
+    private ClientService clientService;
 
     public List<EvaluationDTO> getAllEvaluationsDTO() {
         return evaluationRepository.findAll()
@@ -32,7 +39,7 @@ public class EvaluationService {
                 .orElseThrow(() -> new NoSuchElementException("Error: Evaluation not found!"));
     }
 
-    public Evaluation createBasicEvaluation(Client client) {
+    private Evaluation createBasicEvaluation(Client client) {
         Evaluation evaluation = new Evaluation();
         evaluation.setClient(client);
 
@@ -42,7 +49,7 @@ public class EvaluationService {
         return evaluationRepository.save(evaluation);
     }
 
-    public Evaluation createBasicEvaluationWithDescription(Client client, AddEvaluationRequest addEvaluationRequest) {
+    private Evaluation createBasicEvaluationWithDescription(Client client, AddEvaluationRequest addEvaluationRequest) {
         Evaluation evaluation = new Evaluation();
         evaluation.setClient(client);
         evaluation.setDescription_info(addEvaluationRequest.getDescription());
@@ -53,7 +60,7 @@ public class EvaluationService {
     }
 
 
-    public List<EvaluationDTO> getAllClientEvaluations(Long clientId) {
+    private List<EvaluationDTO> getAllClientEvaluations(Long clientId) {
         return getAllEvaluationsDTO().stream()
                 .filter(evaluationDTO -> Objects.equals(evaluationDTO.getClientId(), clientId))
                 .collect(Collectors.toList());
@@ -84,6 +91,34 @@ public class EvaluationService {
             List<Answer> ans = new ArrayList<>(List.of(new Answer(board)));
             board.setAnswers(ans);
         });
+    }
 
+    public ResponseEntity<MessageResponse> createEvaluation(Long clientId, AddEvaluationRequest addEvaluationRequest) {
+        Client client = clientService.getClientById(clientId);
+
+        if (client == null) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Client was not found."));
+        } else {
+            Evaluation evaluation;
+            if (addEvaluationRequest == null) {
+                evaluation = createBasicEvaluation(client);
+            } else {
+                evaluation = createBasicEvaluationWithDescription(client, addEvaluationRequest);
+            }
+            return ResponseEntity.ok().body(new MessageResponse("Evaluation added.", new EvaluationDTO(evaluation)));
+        }
+    }
+
+    public ResponseEntity<MessageResponse> getAllClientsEvaluations(Client client) {
+        if (client == null) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Client was not found."));
+        }
+        Long dbClientId = client.getId();
+        List<EvaluationDTO> evaluations = getAllClientEvaluations(dbClientId);
+
+        if (evaluations.isEmpty()) {
+            return ResponseEntity.ok(new MessageResponse("Error: Client does not have any evaluations created!"));
+        }
+        return ResponseEntity.ok().body(createMessageResponseWithEvaluationDTOs("Listing client's evaluations!", evaluations));
     }
 }

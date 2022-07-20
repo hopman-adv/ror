@@ -29,7 +29,7 @@ public class UserSecurity {
 		}else {
 			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 			Long loggedId = userDetails.getId();
-			auth = loggedId == id;
+			auth = loggedId.equals(id);
 		}
 		return auth;
 	}

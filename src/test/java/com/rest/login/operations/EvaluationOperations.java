@@ -41,13 +41,13 @@ public class EvaluationOperations {
                     .contentType(ContentType.JSON)
                     .body(addEvaluationRequest)
                     .when().
-                    post("https://localhost:8443/api/data/users/{id}/clients/{clientId}/add-evaluation", USER_ID, clientId)
+                    post("https://localhost:8443/api/data/users/{id}/clients/{clientId}/evaluations", USER_ID, clientId)
                     .jsonPath();
         }else{
             return given().header("Authorization", "Bearer " + TOKEN)
                     .relaxedHTTPSValidation()
                     .when().
-                    post("https://localhost:8443/api/data/users/{id}/clients/{clientId}/add-evaluation", USER_ID, clientId)
+                    post("https://localhost:8443/api/data/users/{id}/clients/{clientId}/evaluations", USER_ID, clientId)
                     .jsonPath();
         }
     }

@@ -27,4 +27,13 @@ public class BoardController {
     BoardRepository boardRepository;
 
     //TODO: controller pro getAllBoards pomocí evaluation id
+
+    @GetMapping("/users/{userId}/clients/{clientId}/evaluations/{evalId}/boards")
+    @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
+    public ResponseEntity<MessageResponse> retrieveBoardsByEvaluationId
+            (@PathVariable Long userId, @PathVariable Long clientId, @PathVariable Long evalId) {
+
+
+        return null;
+    }
 }

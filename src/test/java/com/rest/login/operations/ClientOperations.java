@@ -45,7 +45,7 @@ public class ClientOperations {
                 .contentType(ContentType.JSON)
                 .body(addClientRequest)
                 .when().
-                post("https://localhost:8443/api/data/users/{id}/add-client", USER_ID)
+                post("https://localhost:8443/api/data/users/{id}/clients", USER_ID)
                 .jsonPath();
     }
 
@@ -55,17 +55,16 @@ public class ClientOperations {
                 .contentType(ContentType.JSON)
                 .body(addClientRequest)
                 .when().
-                post("https://localhost:8443/api/data/users/{id}/add-client", userId)
+                post("https://localhost:8443/api/data/users/{id}/clients", userId)
                 .jsonPath();
     }
 
 
     private JsonPath deleteClient(Long clientId) {
-
         return given().header("Authorization", "Bearer "+ TOKEN)
                 .relaxedHTTPSValidation()
                 .when().
-                post("https://localhost:8443/api/data/users/{userId}/delete-client/{clientId}", USER_ID, clientId)
+                delete("https://localhost:8443/api/data/users/{userId}/clients/{clientId}", USER_ID, clientId)
                 .jsonPath();
     }
 
@@ -74,7 +73,7 @@ public class ClientOperations {
         return given().header("Authorization", "Bearer "+ token)
                 .relaxedHTTPSValidation()
                 .when().
-                post("https://localhost:8443/api/data/users/{userId}/delete-client/{clientId}", userId, clientId)
+                delete("https://localhost:8443/api/data/users/{userId}/clients/{clientId}", userId, clientId)
                 .jsonPath();
     }
 
@@ -86,7 +85,7 @@ public class ClientOperations {
                 .contentType(ContentType.JSON)
                 .body(addClientRequest)
                 .when().
-                put("https://localhost:8443/api/data/users/{userId}/edit-client/{clientId}", USER_ID, clientId)
+                put("https://localhost:8443/api/data/users/{userId}/clients/{clientId}", USER_ID, clientId)
                 .jsonPath();
     }
 
@@ -97,7 +96,7 @@ public class ClientOperations {
                 .contentType(ContentType.JSON)
                 .body(addClientRequest)
                 .when().
-                put("https://localhost:8443/api/data/users/{userId}/edit-client/{clientId}", userId, clientId)
+                put("https://localhost:8443/api/data/users/{userId}/clients/{clientId}", userId, clientId)
                 .jsonPath();
     }
 

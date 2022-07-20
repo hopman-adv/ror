@@ -38,7 +38,7 @@ public class ClientController {
         return clientService.getAllClientsDTO();
     }
 
-    @GetMapping("/client/{id}")
+    @GetMapping("/clients/{id}")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ClientDTO retrieveAnyClientById(@PathVariable Long id) {
         return new ClientDTO(clientRepository.getById(id));
@@ -56,18 +56,15 @@ public class ClientController {
         return clientService.getClientDTOByUserIdAndClientId(userId, clientId);
     }
 
-    @PostMapping("/users/{id}/add-client")
+    @PostMapping("/users/{id}/clients")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
     public ClientDTO createClient(@Valid @RequestBody AddClientRequest addClientRequest, @PathVariable Long id) {
-        User user = userRepository.findById(id).get();
-        Client client = clientService.createClientDependingOnPayload(addClientRequest, user);
-        clientRepository.save(client);
-        return new ClientDTO(client);
+        return clientService.createClient(id, addClientRequest);
     }
 
-    @PostMapping("/users/{userId}/delete-client/{clientId}")
+    @DeleteMapping("/users/{userId}/clients/{clientId}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
-    public ResponseEntity deleteClient(@PathVariable Long userId, @PathVariable Long clientId) {
+    public ResponseEntity<MessageResponse> deleteClient(@PathVariable Long userId, @PathVariable Long clientId) {
         try {
             clientService.getClientDTOByUserIdAndClientId(userId, clientId);
         } catch (NoSuchElementException e) {
@@ -77,29 +74,9 @@ public class ClientController {
         return ResponseEntity.ok(new MessageResponse("Client deleted!"));
     }
 
-    @PutMapping("/users/{userId}/edit-client/{clientId}")
+    @PutMapping("/users/{userId}/clients/{clientId}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
-    public ResponseEntity editClient(@PathVariable Long userId, @PathVariable Long clientId, @Valid @RequestBody AddClientRequest addClientRequest) {
-        Client client;
-        //TODO: Možná přesunout a zmergovat s createClientDependingOnPayload v ClientService
-        try {
-            client = clientRepository.getById(clientId);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Client not found in database!"));
-        }
-        if (addClientRequest.getName() != null) {
-            client.setName(addClientRequest.getName());
-        }
-        if (addClientRequest.getEmail() != null) {
-            client.setEmail(addClientRequest.getEmail());
-        }
-        if (addClientRequest.getDescription() != null) {
-            client.setDescription(addClientRequest.getDescription());
-        }
-
-        clientRepository.save(client);
-
-        return ResponseEntity.ok(new MessageResponse("Client updated.", clientService.getClientDTOByUserIdAndClientId(userId, clientId)));
+    public ResponseEntity<MessageResponse> editClient(@PathVariable Long userId, @PathVariable Long clientId, @Valid @RequestBody AddClientRequest addClientRequest) {
+        return clientService.editAndSaveClient(clientId, addClientRequest);
     }
-
 }
