@@ -32,7 +32,7 @@ public class EvaluationTest {
 
     static String AUTH_URL = "https://localhost:8443/api/auth/";
     static String BASE_URL = "https://localhost:8443/api/data/";
-    static String NON_EXISTING_CLIENT_MESSAGE = "Client was not found.";
+    static String NON_EXISTING_CLIENT_MESSAGE = "Error: Client not found in database!";
 
     @Autowired
     private UserSession userSession;

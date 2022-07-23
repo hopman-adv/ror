@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.rest.login.enums.EResponses.*;
 import static com.rest.login.payload.response.MessageResponse.createMessageResponseWithAnswerDTOs;
 import static com.rest.login.payload.response.MessageResponse.createMessageResponseWithEvaluationDTOs;
 
@@ -45,15 +46,15 @@ public class AnswerController {
         try {
             board = boardService.getBoardById(boardId);
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Board was not found."));
+            return ResponseEntity.badRequest().body(new MessageResponse(BOARD_NOT_FOUND.getMessage()));
         }
         if (!Objects.equals(board.getEvaluation().getClient().getUser().getId(), userId)) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Unauthorized access - client owned by different user!"));
+            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_OWNED_BY_DIFFERENT_USER.getMessage()));
         }
         List<Answer> answers = board.getAnswers();
         List<AnswerDto> listDtos = answers.stream()
                 .map(answer -> new AnswerDto(answer.getId(), answer.getAnswer_text(), answer.getBoard()))
                 .collect(Collectors.toList());
-        return ResponseEntity.ok().body(createMessageResponseWithAnswerDTOs("Listing all answers from board!", listDtos));
+        return ResponseEntity.ok().body(createMessageResponseWithAnswerDTOs(LISTING_ANSWERS_FROM_BOARD.getMessage(), listDtos));
     }
 }

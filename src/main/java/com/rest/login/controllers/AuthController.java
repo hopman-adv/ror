@@ -41,6 +41,8 @@ import com.rest.login.security.jwt.exception.TokenRefreshException;
 import com.rest.login.security.services.RefreshTokenService;
 import com.rest.login.security.services.UserDetailsImpl;
 
+import static com.rest.login.enums.EResponses.*;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
@@ -104,11 +106,11 @@ public class AuthController {
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
+			return ResponseEntity.badRequest().body(new MessageResponse(USERNAME_TAKEN.getMessage()));
 		}
 
 		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
+			return ResponseEntity.badRequest().body(new MessageResponse(EMAIL_ALREADY_USED.getMessage()));
 		}
 
 		// Create new user's account
@@ -121,23 +123,23 @@ public class AuthController {
 		//Chybí li role nastaví se role USER
 		if (strRoles == null) {
 			Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+					.orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND.getMessage()));
 			roles.add(userRole);
 		} else {
 			//pro každý string role najdu roli v enum a přidám ji do Listu rolí
 			strRoles.forEach(role -> {
 				switch (role) {
 				case "admin":
-					throw new RuntimeException("Error: Registering admin role is forbidden.");
+					throw new RuntimeException(ADMIN_ROLE_NOT_REGISTREABLE.getMessage());
 				case "mod":
 					Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+					.orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND.getMessage()));
 					roles.add(modRole);
 
 					break;
 				default:
 					Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+					.orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND.getMessage()));
 					roles.add(userRole);
 				}
 			});
@@ -147,13 +149,13 @@ public class AuthController {
 		//Uložím uživatele do DB
 		userRepository.save(user);
 		//Vrátím OK hlášku
-		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+		return ResponseEntity.ok(new MessageResponse(USER_REGISTERED.getMessage()));
 	}
 
 	  @PostMapping("/logout")
 	  public ResponseEntity<?> logoutUser(@Valid @RequestBody LogOutRequest logOutRequest) {
 	    refreshTokenService.deleteByUserId(logOutRequest.getUserId());
-	    return ResponseEntity.ok(new MessageResponse("Log out successful!"));
+	    return ResponseEntity.ok(new MessageResponse(LOGOUT_SUCCESSFUL.getMessage()));
 	  }
 
 }

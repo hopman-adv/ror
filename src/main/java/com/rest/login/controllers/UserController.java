@@ -1,5 +1,6 @@
 package com.rest.login.controllers;
 
+import static com.rest.login.enums.EResponses.USER_REGISTERED;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -69,7 +70,7 @@ public class UserController {
         user.setEmail(updateRequest.getEmail());
         userRepository.save(user);
 
-        return ResponseEntity.ok(new MessageResponse("User successfully updated!"));
+        return ResponseEntity.ok(new MessageResponse(USER_REGISTERED.getMessage()));
     }
 
 }

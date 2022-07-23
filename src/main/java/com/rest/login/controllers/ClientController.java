@@ -1,6 +1,7 @@
 package com.rest.login.controllers;
 
 import com.rest.login.dto.ClientDTO;
+import com.rest.login.enums.EResponses;
 import com.rest.login.models.Client;
 import com.rest.login.models.User;
 import com.rest.login.payload.request.AddClientRequest;
@@ -17,6 +18,9 @@ import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import static com.rest.login.enums.EResponses.CLIENT_DELETED;
+import static com.rest.login.enums.EResponses.CLIENT_NOT_FOUND;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -68,10 +72,10 @@ public class ClientController {
         try {
             clientService.getClientDTOByUserIdAndClientId(userId, clientId);
         } catch (NoSuchElementException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Client not found in database!"));
+            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
         }
         clientRepository.deleteById(clientId);
-        return ResponseEntity.ok(new MessageResponse("Client deleted!"));
+        return ResponseEntity.ok(new MessageResponse(CLIENT_DELETED.getMessage()));
     }
 
     @PutMapping("/users/{userId}/clients/{clientId}")

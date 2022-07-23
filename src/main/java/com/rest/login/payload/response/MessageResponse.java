@@ -1,5 +1,6 @@
 package com.rest.login.payload.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.rest.login.dto.AnswerDto;
 import com.rest.login.dto.ClientDTO;
 import com.rest.login.dto.EvaluationDTO;
@@ -7,6 +8,7 @@ import com.rest.login.models.Evaluation;
 
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageResponse {
     private String message;
     private ClientDTO response;

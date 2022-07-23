@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.rest.login.enums.EResponses.*;
 import static com.rest.login.payload.response.MessageResponse.createMessageResponseWithEvaluationDTOs;
 
 @Service
@@ -97,7 +98,7 @@ public class EvaluationService {
         Client client = clientService.getClientById(clientId);
 
         if (client == null) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Client was not found."));
+            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
         } else {
             Evaluation evaluation;
             if (addEvaluationRequest == null) {
@@ -105,20 +106,20 @@ public class EvaluationService {
             } else {
                 evaluation = createBasicEvaluationWithDescription(client, addEvaluationRequest);
             }
-            return ResponseEntity.ok().body(new MessageResponse("Evaluation added.", new EvaluationDTO(evaluation)));
+            return ResponseEntity.ok().body(new MessageResponse(EVALUATION_ADDED.getMessage(), new EvaluationDTO(evaluation)));
         }
     }
 
     public ResponseEntity<MessageResponse> getAllClientsEvaluations(Client client) {
         if (client == null) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Client was not found."));
+            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
         }
         Long dbClientId = client.getId();
         List<EvaluationDTO> evaluations = getAllClientEvaluations(dbClientId);
 
         if (evaluations.isEmpty()) {
-            return ResponseEntity.ok(new MessageResponse("Error: Client does not have any evaluations created!"));
+            return ResponseEntity.ok(new MessageResponse(NO_EVALUATIONS_FOR_CLIENT.getMessage()));
         }
-        return ResponseEntity.ok().body(createMessageResponseWithEvaluationDTOs("Listing client's evaluations!", evaluations));
+        return ResponseEntity.ok().body(createMessageResponseWithEvaluationDTOs(LISTING_EVALUATIONS.getMessage(), evaluations));
     }
 }
