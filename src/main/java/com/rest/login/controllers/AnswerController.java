@@ -10,6 +10,7 @@ import com.rest.login.models.Evaluation;
 import com.rest.login.payload.request.AddEvaluationRequest;
 import com.rest.login.payload.response.MessageResponse;
 import com.rest.login.repository.BoardRepository;
+import com.rest.login.security.services.AnswerService;
 import com.rest.login.security.services.BoardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -39,22 +40,12 @@ public class AnswerController {
     @Autowired
     BoardService boardService;
 
+    @Autowired
+    AnswerService answerService;
+
     @GetMapping("/users/{userId}/boards/{boardId}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
     public ResponseEntity<MessageResponse> retrieveAnswersByBoardId(@PathVariable Long userId, @PathVariable Long boardId) {
-        Board board = null;
-        try {
-            board = boardService.getBoardById(boardId);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse(BOARD_NOT_FOUND.getMessage()));
-        }
-        if (!Objects.equals(board.getEvaluation().getClient().getUser().getId(), userId)) {
-            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_OWNED_BY_DIFFERENT_USER.getMessage()));
-        }
-        List<Answer> answers = board.getAnswers();
-        List<AnswerDto> listDtos = answers.stream()
-                .map(answer -> new AnswerDto(answer.getId(), answer.getAnswer_text(), answer.getBoard()))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok().body(createMessageResponseWithAnswerDTOs(LISTING_ANSWERS_FROM_BOARD.getMessage(), listDtos));
+        return answerService.getAllAnswersFromBoard(boardId, userId);
     }
 }

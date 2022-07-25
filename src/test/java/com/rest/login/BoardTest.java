@@ -1,6 +1,7 @@
 package com.rest.login;
 
 import com.rest.login.data.UserSession;
+import com.rest.login.enums.EResponses;
 import com.rest.login.models.Board;
 import com.rest.login.operations.BoardAndAnswerOperations;
 import com.rest.login.operations.ClientOperations;
@@ -58,6 +59,8 @@ public class BoardTest {
     JsonPath client = null;
     JsonPath client2 = null;
 
+    private final Long NON_EXISTING_ID = -1L;
+
     @BeforeEach
     void createUser() {
         userOperations.createAndLoginTesterUser(AUTH_URL);
@@ -82,12 +85,13 @@ public class BoardTest {
     }
 
     @Test
-    void getAnswersFromBoard() {
+    void getAnswersFromNonExistingBoard() {
         JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(client.getLong("id"));
 
         //TODO: až bude controller pro získání all boards -> boardAndAnswerOperations.getAnswersFromBoardById()
-        log.info(evaluation.prettify());
-        //int i = 1;
+        JsonPath json = boardAndAnswerOperations.getAnswersFromBoardById(NON_EXISTING_ID);
+        assertThat(json.getString("message"), equalTo(EResponses.BOARD_NOT_FOUND.getMessage()));
+        log.info(json.prettify());
     }
 
 }

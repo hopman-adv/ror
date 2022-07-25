@@ -24,14 +24,14 @@ public class BoardService {
 	@Autowired
 	private BoardRepository boardRepository;
 
+	public List<Board> getAllBoardsByEvaluationId(Long evalId) {
+		List<Board> boards = boardRepository.findByEvaluation_id(evalId);
+
+		return boards;
+	}
+
 	public Board getBoardById(Long boardId) {
-		Board board;
-		try {
-			board = boardRepository.findById(boardId).get();
-		} catch (EntityNotFoundException | NoSuchElementException e) {
-			return null;
-		}
-		return board;
+		 return boardRepository.findById(boardId).get();
 	}
 
 }

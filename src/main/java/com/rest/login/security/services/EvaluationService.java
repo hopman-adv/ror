@@ -4,7 +4,6 @@ import com.rest.login.dto.EvaluationDTO;
 import com.rest.login.models.*;
 import com.rest.login.payload.request.AddEvaluationRequest;
 import com.rest.login.payload.response.MessageResponse;
-import com.rest.login.repository.BoardRepository;
 import com.rest.login.repository.EvaluationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -111,6 +110,7 @@ public class EvaluationService {
     }
 
     public ResponseEntity<MessageResponse> getAllClientsEvaluations(Client client) {
+        //TODO: Doplnit přístup jen pro klienty daného usera. Přidat userID a pracovat s ním.
         if (client == null) {
             return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
         }

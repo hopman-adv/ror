@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.rest.login.enums.EResponses.*;
 import static com.rest.login.models.Client.*;
 import static com.rest.login.models.Client.createFullClient;
 
@@ -36,7 +37,7 @@ public class ClientService {
 
     private Client createClientDependingOnPayload(AddClientRequest addClientRequest, User user) {
         if (addClientRequest.getName() == null) {
-            throw new UnsupportedOperationException("Error: Missing name in body!");
+            throw new UnsupportedOperationException(MISSING_NAME_IN_BODY.getMessage());
         }
         if (addClientRequest.getDescription() == null && addClientRequest.getEmail() == null) {
             return createNameClient(addClientRequest.getName(), user);
@@ -75,7 +76,7 @@ public class ClientService {
                 .filter(client -> Objects.equals(client.getUserId(), userId)
                         && Objects.equals(client.getId(), clientId))
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Error: Client not found!"));
+                .orElseThrow(() -> new NoSuchElementException(CLIENT_NOT_FOUND.getMessage()));
     }
 
     public Client getClientById(Long clientId) {
@@ -92,7 +93,7 @@ public class ClientService {
         Client client = getClientById(clientId);
 
         if (client == null) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Client was not found."));
+            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
         }
         Long userId = client.getUser().getId();
 
@@ -107,6 +108,6 @@ public class ClientService {
         }
         clientRepository.save(client);
 
-        return ResponseEntity.ok(new MessageResponse("Client updated.", getClientDTOByUserIdAndClientId(userId, clientId)));
+        return ResponseEntity.ok(new MessageResponse(CLIENT_UPDATED.getMessage(), getClientDTOByUserIdAndClientId(userId, clientId)));
     }
 }
