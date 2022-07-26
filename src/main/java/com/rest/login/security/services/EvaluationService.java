@@ -5,6 +5,7 @@ import com.rest.login.models.*;
 import com.rest.login.payload.request.AddEvaluationRequest;
 import com.rest.login.payload.response.MessageResponse;
 import com.rest.login.repository.EvaluationRepository;
+import com.sun.xml.bind.v2.TODO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -101,7 +102,7 @@ public class EvaluationService {
         } catch (EntityNotFoundException | NoSuchElementException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
         }
-
+        //TODO: přesunout rozhodování ohledně tvorby evaluation do evaluationService (kod níže)
         Evaluation evaluation;
         if (addEvaluationRequest == null) {
             evaluation = createBasicEvaluation(client);
