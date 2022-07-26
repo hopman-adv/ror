@@ -3,9 +3,11 @@ package com.rest.login.operations;
 import com.rest.login.Application;
 import com.rest.login.data.UserSession;
 import com.rest.login.payload.request.LoginRequest;
+import com.rest.login.payload.request.UpdateRequest;
 import com.rest.login.payloads.TestUserPayload;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.rest.login.data.UserSession.TOKEN;
+import static com.rest.login.data.UserSession.*;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -55,28 +57,28 @@ public class UserOperations {
     }
 
     public void deleteUserByUsername(String username) {
-        jdbcTemplate.execute("DELETE C FROM CLIENTS C JOIN USERS U ON U.ID=C.USER_ID WHERE U.USERNAME = '"+username+"';");
-        jdbcTemplate.execute("DELETE RT FROM REFRESHTOKEN RT JOIN USERS U ON U.ID=RT.USER_ID WHERE U.USERNAME = '"+username+"';");
-        jdbcTemplate.execute("DELETE UR FROM USER_ROLES UR JOIN USERS U ON U.ID=UR.USER_ID WHERE U.USERNAME = '"+username+"';");
-        jdbcTemplate.execute("DELETE FROM USERS WHERE USERNAME = '"+username+"';");
+        jdbcTemplate.execute("DELETE C FROM CLIENTS C JOIN USERS U ON U.ID=C.USER_ID WHERE U.USERNAME = '" + username + "';");
+        jdbcTemplate.execute("DELETE RT FROM REFRESHTOKEN RT JOIN USERS U ON U.ID=RT.USER_ID WHERE U.USERNAME = '" + username + "';");
+        jdbcTemplate.execute("DELETE UR FROM USER_ROLES UR JOIN USERS U ON U.ID=UR.USER_ID WHERE U.USERNAME = '" + username + "';");
+        jdbcTemplate.execute("DELETE FROM USERS WHERE USERNAME = '" + username + "';");
     }
 
     public void deleteUserByUsernameAndClientId(String username, Long clientId) {
         jdbcTemplate.execute("DELETE FROM ANSWERS");
         jdbcTemplate.execute("DELETE FROM BOARDS");
-        jdbcTemplate.execute("DELETE E FROM CLIENTS C JOIN EVALUATION_RECORDS E ON C.ID = E.CLIENT_ID WHERE C.ID = '"+clientId+"';");
-        jdbcTemplate.execute("DELETE FROM CLIENTS WHERE ID = '"+clientId+"';");
-        jdbcTemplate.execute("DELETE RT FROM REFRESHTOKEN RT JOIN USERS U ON U.ID=RT.USER_ID WHERE U.USERNAME = '"+username+"';");
-        jdbcTemplate.execute("DELETE UR FROM USER_ROLES UR JOIN USERS U ON U.ID=UR.USER_ID WHERE U.USERNAME = '"+username+"';");
-        jdbcTemplate.execute("DELETE FROM USERS WHERE USERNAME = '"+username+"';");
+        jdbcTemplate.execute("DELETE E FROM CLIENTS C JOIN EVALUATION_RECORDS E ON C.ID = E.CLIENT_ID WHERE C.ID = '" + clientId + "';");
+        jdbcTemplate.execute("DELETE FROM CLIENTS WHERE ID = '" + clientId + "';");
+        jdbcTemplate.execute("DELETE RT FROM REFRESHTOKEN RT JOIN USERS U ON U.ID=RT.USER_ID WHERE U.USERNAME = '" + username + "';");
+        jdbcTemplate.execute("DELETE UR FROM USER_ROLES UR JOIN USERS U ON U.ID=UR.USER_ID WHERE U.USERNAME = '" + username + "';");
+        jdbcTemplate.execute("DELETE FROM USERS WHERE USERNAME = '" + username + "';");
     }
 
     public void deleteEvaluationsFromClient(Long clientId) {
-        jdbcTemplate.execute("DELETE E FROM CLIENTS C JOIN EVALUATION_RECORDS E ON C.ID = E.CLIENT_ID WHERE C.ID = '"+clientId+"';");
+        jdbcTemplate.execute("DELETE E FROM CLIENTS C JOIN EVALUATION_RECORDS E ON C.ID = E.CLIENT_ID WHERE C.ID = '" + clientId + "';");
     }
 
     public void deleteClientById(Long clientId) {
-        jdbcTemplate.execute("DELETE FROM CLIENTS WHERE ID = '"+clientId+"';");
+        jdbcTemplate.execute("DELETE FROM CLIENTS WHERE ID = '" + clientId + "';");
     }
 
     public void deleteAllBoards() {
@@ -94,33 +96,34 @@ public class UserOperations {
         jdbcTemplate.execute("DELETE FROM USERS");
     }
 
-    public void createTesterUser(String role, String email ,String username, String URL, String password) {
+    public void createTesterUser(String role, String email, String username, String URL, String password) {
         Set<String> roles = new HashSet<String>();
         roles.add("user");
         TestUserPayload newUser = new TestUserPayload(username, email, roles, password);
         postRequest(newUser, "User registered successfully!", 200, URL);
     }
 
-    public JsonPath getUserByUsername(String username, String token) {
-        return given().header("Authorization", "Bearer "+TOKEN)
+    public Response getUserByUsername(String username) {
+        return given().header("Authorization", "Bearer " + TOKEN)
                 .relaxedHTTPSValidation()
                 .contentType(ContentType.JSON)
                 .when().
-                get("https://localhost:8443/api/data/users/"+username).jsonPath();
+                get("https://localhost:8443/api/data/users/" + username);
     }
 
     public void getUserByUsernameSuccessCheck(String name) {
-        JsonPath clientJson = getUserByUsername(name, TOKEN);
-
-        String username = clientJson.getString("username");
-        String email = clientJson.getString("email");
-        String id = clientJson.getString("id");
+        JsonPath clientJson = getUserByUsername(name).jsonPath();
+        log.info(clientJson.prettify());
+        String prefix = "userDetails.";
+        String username = clientJson.getString(prefix + "username");
+        String email = clientJson.getString(prefix + "email");
+        String id = clientJson.getString(prefix + "id");
 
         assertThat(username, is(UserSession.USER_NAME));
         assertThat(email, is(UserSession.USER_EMAIL));
         assertThat(id, is(UserSession.USER_ID));
 
-        log.info("Returned client: NAME: "+username + " ID: "+id+ " EMAIL: "+email);
+        log.info("Returned client: NAME: " + username + " ID: " + id + " EMAIL: " + email);
     }
 
     public JsonPath createAndLoginTesterUser(String url) {
@@ -141,6 +144,31 @@ public class UserOperations {
         JsonPath json = loginRequest(new LoginRequest(userSession.USER2_NAME, userSession.USER2_PASSWORD));
         userSession.saveSecondUserSessionDataFromLoginRequest(json);
         return json;
+    }
+
+    public Response editUser(UpdateRequest updateRequest, String userId, String token) {
+        return given().header("Authorization", "Bearer " + token)
+                .relaxedHTTPSValidation()
+                .contentType(ContentType.JSON)
+                .body(updateRequest)
+                .when().
+                put("https://localhost:8443/api/data/users/" + userId);
+    }
+
+    public JsonPath updatePrecreatedUser(String name, String email) {
+        UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.setUsername(name);
+        updateRequest.setEmail(email);
+        return editUser(updateRequest, USER_ID, TOKEN).jsonPath();
+    }
+
+    public Response tryToUpdateSecondPrecreatedUserByFirstUser(String name, String email) {
+        UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.setUsername(name);
+        updateRequest.setEmail(email);
+        String firstUserToken = TOKEN;
+        String secondUserId = USER2_ID;
+        return editUser(updateRequest, secondUserId, firstUserToken);
     }
 
 

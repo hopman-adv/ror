@@ -3,6 +3,9 @@ package com.rest.login.enums;
 public enum EResponses {
     USER_UPDATED("User successfully updated!"),
     USER_REGISTERED("User registered successfully!"),
+    USER_EXISTS("User exists in database!"),
+    USER_NOT_FOUND("User not found in database!"),
+    LISTING_ALL_USERS("All users from database."),
     CLIENT_DELETED("Client deleted!"),
     CLIENT_UPDATED("Client updated."),
     CLIENT_NOT_FOUND("Error: Client not found in database!"),

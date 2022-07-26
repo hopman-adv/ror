@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.rest.login.UserSignupTest.USER_NAME;
+import static com.rest.login.enums.EResponses.CLIENT_NOT_FOUND;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
@@ -186,7 +187,7 @@ public class ClientTest {
 
         JsonPath json = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
         assertThat(json.getString("status"), equalTo("500"));
-        assertThat(json.getString("message"), equalTo("Error: Client not found!"));
+        assertThat(json.getString("message"), equalTo("Error: Client not found in database!"));
     }
 
     @Test
@@ -196,7 +197,7 @@ public class ClientTest {
 
         JsonPath response = clientOperations.deleteClientById(NON_EXISTING_CLIENT_ID);
 
-        assertThat(response.getString("message"), equalTo("Error: Client not found in database!"));
+        assertThat(response.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
     }
 
     @Test

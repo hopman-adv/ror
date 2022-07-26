@@ -1,21 +1,25 @@
 package com.rest.login.controllers;
 
-import static com.rest.login.enums.EResponses.USER_REGISTERED;
+import static com.rest.login.enums.EResponses.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.rest.login.dto.ClientDTO;
 import com.rest.login.models.Client;
 import com.rest.login.repository.ClientRepository;
+import com.rest.login.security.services.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -50,27 +54,30 @@ public class UserController {
 
     @GetMapping("/users/{username}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserName(authentication,#username)")
-    public EntityModel<UserDetails> getUserByUsername(@PathVariable String username) {
+    public ResponseEntity<MessageResponse> getUserByUsername(@PathVariable String username) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        EntityModel<UserDetails> resource = EntityModel.of(userDetails);
-        return resource;
+        return ResponseEntity.ok(new MessageResponse(USER_EXISTS.getMessage(), userDetails));
     }
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-    public List<User> retriveAllUsers() {
-        return userRepository.findAll();
+    public ResponseEntity<MessageResponse> retriveAllUsers() {
+        return ResponseEntity.ok().body(
+                new MessageResponse(LISTING_ALL_USERS.getMessage(), userDetailsService.getAllUsers()));
     }
 
     @PutMapping("/users/{id}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateRequest updateRequest) {
-        User user = userRepository.findById(id).get();
-        user.setUsername(updateRequest.getUsername());
-        user.setEmail(updateRequest.getEmail());
-        userRepository.save(user);
+    public ResponseEntity<MessageResponse> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateRequest updateRequest) {
+        User user;
+        try {
+            user = userDetailsService.getUserById(id);
+        } catch (EntityNotFoundException | NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(USER_NOT_FOUND.getMessage()));
+        }
 
-        return ResponseEntity.ok(new MessageResponse(USER_REGISTERED.getMessage()));
+        User savedUser = userDetailsService.updateUser(user, updateRequest);
+        UserDetails savedUserDetails = UserDetailsImpl.build(savedUser);
+        return ResponseEntity.ok(new MessageResponse(USER_UPDATED.getMessage(), savedUserDetails));
     }
-
 }

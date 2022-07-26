@@ -8,6 +8,7 @@ import com.rest.login.operations.UserOperations;
 import com.rest.login.repository.BoardRepository;
 import groovy.util.logging.Slf4j;
 import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.rest.login.data.UserSession.*;
+import static com.rest.login.enums.EResponses.CLIENT_NOT_FOUND;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -69,6 +71,12 @@ public class DataAccessTest {
     }
 
     @Test
+    void userCannotSeeOtherUsersInfo() {
+        Response response = userOperations.getUserByUsername(userSession.USER2_NAME);
+        assertThat(response.statusCode(), equalTo(403));
+    }
+
+    @Test
     void userCanSeeOnlyHisClients() {
         Long id1 = client.getLong("id");
         Long id2 = client2.getLong("id");
@@ -82,8 +90,8 @@ public class DataAccessTest {
 
         assertThat(json1.getString("name"), equalTo(name1));
         assertThat(json2.getString("name"), equalTo(name2));
-        assertThat(json3.getString("message"), equalTo("Error: Client not found!"));
-        assertThat(json4.getString("message"), equalTo("Error: Client not found!"));
+        assertThat(json3.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
+        assertThat(json4.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -107,17 +115,17 @@ public class DataAccessTest {
         List<Object> list1 = firstClientEvaluationJson.getList("evaluationsList");
         List<Object> list2 = secondClientEvaluationJson.getList("evaluationsList");
 
-        assertThat(list1.get(0).toString(), containsString("id="+evaluationId1));
-        assertThat(list1.get(1).toString(), containsString("id="+evaluationId2));
-        assertThat(list2.get(0).toString(), containsString("id="+evaluationId3));
+        assertThat(list1.get(0).toString(), containsString("id=" + evaluationId1));
+        assertThat(list1.get(1).toString(), containsString("id=" + evaluationId2));
+        assertThat(list2.get(0).toString(), containsString("id=" + evaluationId3));
 
         assertThat(firstClientEvaluationJson.getList("evaluationsList").size(), equalTo(2));
         assertThat(secondClientEvaluationJson.getList("evaluationsList").size(), equalTo(1));
 
-        assertThat(list1.get(0).toString(), not(containsString("id="+evaluationId3)));
-        assertThat(list1.get(1).toString(), not(containsString("id="+evaluationId3)));
-        assertThat(list2.get(0).toString(), not(containsString("id="+evaluationId1)));
-        assertThat(list2.get(0).toString(), not(containsString("id="+evaluationId2)));
+        assertThat(list1.get(0).toString(), not(containsString("id=" + evaluationId3)));
+        assertThat(list1.get(1).toString(), not(containsString("id=" + evaluationId3)));
+        assertThat(list2.get(0).toString(), not(containsString("id=" + evaluationId1)));
+        assertThat(list2.get(0).toString(), not(containsString("id=" + evaluationId2)));
     }
 
     @Test

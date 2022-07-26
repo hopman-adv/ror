@@ -1,9 +1,6 @@
 package com.rest.login.controllers;
 
 import com.rest.login.dto.ClientDTO;
-import com.rest.login.enums.EResponses;
-import com.rest.login.models.Client;
-import com.rest.login.models.User;
 import com.rest.login.payload.request.AddClientRequest;
 import com.rest.login.payload.response.MessageResponse;
 import com.rest.login.repository.ClientRepository;
@@ -14,13 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.NoSuchElementException;
+import static com.rest.login.enums.EResponses.CLIENT_NOT_FOUND;
 
 import static com.rest.login.enums.EResponses.CLIENT_DELETED;
-import static com.rest.login.enums.EResponses.CLIENT_NOT_FOUND;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
