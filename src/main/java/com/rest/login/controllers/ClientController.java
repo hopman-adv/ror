@@ -9,6 +9,7 @@ import com.rest.login.repository.ClientRepository;
 import com.rest.login.repository.UserRepository;
 import com.rest.login.security.services.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -58,18 +59,24 @@ public class ClientController {
     public ResponseEntity<MessageResponse> retrieveAllClientsByUserId(@PathVariable Long id) {
         List<ClientDTO> list = clientService.getAllUsersClientsDTOsByUserId(id);
         if(list.isEmpty()) {
-            return ResponseEntity.ok().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
+            return ResponseEntity.ok().body(new MessageResponse(CLIENTS_NOT_FOUND.getMessage()));
         }
         return ResponseEntity.ok().body(
                 createMessageResponseWithClientDTOsList(list));
     }
-//TODO: pokračovat zde!
+
     @GetMapping("/users/{userId}/clients/{clientId}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
-    public ClientDTO retrieveOwnedClientById(@PathVariable Long userId, @PathVariable Long clientId) {
-        return clientService.getClientDTOByUserIdAndClientId(userId, clientId);
+    public ResponseEntity<MessageResponse> retrieveOwnedClientById(@PathVariable Long userId, @PathVariable Long clientId) {
+        ClientDTO clientDTO;
+        try {
+            clientDTO = clientService.getClientDTOByUserIdAndClientId(userId, clientId);
+        }catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
+        }
+        return ResponseEntity.ok().body(new MessageResponse(CLIENT_FOUND.getMessage(), clientDTO));
     }
-
+    //TODO: zde pokračovat
     @PostMapping("/users/{id}/clients")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
     public ClientDTO createClient(@Valid @RequestBody AddClientRequest addClientRequest, @PathVariable Long id) {

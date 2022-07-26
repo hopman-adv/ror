@@ -10,6 +10,7 @@ public enum EResponses {
     CLIENT_UPDATED("Client updated."),
     CLIENT_FOUND("Returning client data."),
     CLIENT_NOT_FOUND("Error: Client not found in database!"),
+    CLIENTS_NOT_FOUND("No clients found."),
     LISTING_ALL_CLIENTS("All clients from database."),
     EVALUATION_NOT_FOUND("Error: Evaluation not found!"),
     EVALUATION_ADDED("Evaluation added."),

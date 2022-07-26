@@ -1,9 +1,14 @@
 package com.rest.login;
 
 import com.rest.login.data.UserSession;
+import com.rest.login.dto.ClientDTO;
 import com.rest.login.operations.ClientOperations;
 import com.rest.login.operations.UserOperations;
-import com.rest.login.payload.request.AddClientRequest;
+
+import static com.rest.login.DataAccessTest.CLIENT_PREFIX;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.rest.login.security.services.ClientService;
 import groovy.util.logging.Slf4j;
 import io.restassured.path.json.JsonPath;
 import org.junit.jupiter.api.AfterEach;
@@ -19,6 +24,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.rest.login.UserSignupTest.USER_NAME;
+import static com.rest.login.data.UserSession.USER_ID;
 import static com.rest.login.enums.EResponses.CLIENT_NOT_FOUND;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -42,6 +48,9 @@ public class ClientTest {
 
     @Autowired
     private ClientOperations clientOperations;
+
+    @Autowired
+    private ClientService clientService;
 
     Logger log = LoggerFactory.getLogger(ClientTest.class);
 
@@ -197,7 +206,6 @@ public class ClientTest {
         assertThat(response.getString("message"), equalTo("Client deleted!"));
 
         JsonPath json = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
-        assertThat(json.getString("status"), equalTo("500"));
         assertThat(json.getString("message"), equalTo("Error: Client not found in database!"));
     }
 
@@ -219,15 +227,15 @@ public class ClientTest {
         JsonPath json = clientOperations.editAllAttributesClientById(client.getLong("id"));
 
         assertThat(json.getString("message"), equalTo("Client updated."));
-        assertThat(json.get("client.name"), equalTo("Josef"));
-        assertThat(json.get("client.email"), equalTo("josef@mai.com"));
-        assertThat(json.get("client.description"), equalTo("Kecy na nic"));
-        assertThat(json.getLong("client.id"), equalTo(client.getLong("id")));
+        assertThat(json.get(CLIENT_PREFIX+"name"), equalTo("Josef"));
+        assertThat(json.get(CLIENT_PREFIX+"email"), equalTo("josef@mai.com"));
+        assertThat(json.get(CLIENT_PREFIX+"description"), equalTo("Kecy na nic"));
+        assertThat(json.getLong(CLIENT_PREFIX+"id"), equalTo(client.getLong("id")));
 
         JsonPath updatedClientJson = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
-        assertThat(updatedClientJson.get("name"), equalTo("Josef"));
-        assertThat(updatedClientJson.get("email"), equalTo("josef@mai.com"));
-        assertThat(updatedClientJson.get("description"), equalTo("Kecy na nic"));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX+"name"), equalTo("Josef"));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX+"email"), equalTo("josef@mai.com"));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX+"description"), equalTo("Kecy na nic"));
     }
 
     @Test
@@ -241,17 +249,40 @@ public class ClientTest {
         Long origUserId = client.getLong("userId");
 
         assertThat(json.getString("message"), equalTo("Client updated."));
-        assertThat(json.get("client.name"), equalTo("Josef"));
-        assertThat(json.get("client.email"), equalTo(origEmail));
-        assertThat(json.get("client.description"), equalTo(origDesc));
-        assertThat(json.getLong("client.id"), equalTo(origId));
+        assertThat(json.get(CLIENT_PREFIX+"name"), equalTo("Josef"));
+        assertThat(json.get(CLIENT_PREFIX+"email"), equalTo(origEmail));
+        assertThat(json.get(CLIENT_PREFIX+"description"), equalTo(origDesc));
+        assertThat(json.getLong(CLIENT_PREFIX+"id"), equalTo(origId));
 
         JsonPath updatedClientJson = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
-        assertThat(updatedClientJson.get("name"), equalTo("Josef"));
-        assertThat(updatedClientJson.get("email"), equalTo(origEmail));
-        assertThat(updatedClientJson.get("description"), equalTo(origDesc));
-        assertThat(updatedClientJson.getLong("id"), equalTo(origId));
-        assertThat(updatedClientJson.getLong("userId"), equalTo(origUserId));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX+"name"), equalTo("Josef"));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX+"email"), equalTo(origEmail));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX+"description"), equalTo(origDesc));
+        assertThat(updatedClientJson.getLong(CLIENT_PREFIX+"id"), equalTo(origId));
+        assertThat(updatedClientJson.getLong(CLIENT_PREFIX+"userId"), equalTo(origUserId));
     }
+
+    @Test
+    public void noClientsFoundForUser() {
+        List<ClientDTO> list = clientService.getAllClientsDTO();
+        assertThat(list.size(), equalTo(0));
+    }
+
+    @Test
+    public void specificClientNotFoundForUser() {
+        Exception exception = assertThrows(
+                NoSuchElementException.class,
+                () -> clientService.getClientDTOByUserIdAndClientId(Long.parseLong(USER_ID), -1L));
+        log.info(exception.getMessage());
+        assertEquals(exception.getMessage(), CLIENT_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    public void specificClientNotFoundForUserViaEndpoint() {
+        JsonPath json = clientOperations.checkClientByUserIdClientId(-1L);
+        log.info(json.prettify());
+        assertEquals(json.getString("message"), CLIENT_NOT_FOUND.getMessage());
+    }
+
 
 }

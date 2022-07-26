@@ -50,6 +50,7 @@ public class DataAccessTest {
     @Autowired
     private BoardRepository boardRepository;
 
+    static protected final String CLIENT_PREFIX = "client.";
 
     Logger log = LoggerFactory.getLogger(DataAccessTest.class);
 
@@ -89,8 +90,8 @@ public class DataAccessTest {
         JsonPath json3 = clientOperations.checkClientByUserIdClientId(id1, USER2_ID, TOKEN2);
         JsonPath json4 = clientOperations.checkClientByUserIdClientId(id2, USER_ID, TOKEN);
 
-        assertThat(json1.getString("name"), equalTo(name1));
-        assertThat(json2.getString("name"), equalTo(name2));
+        assertThat(json1.getString(CLIENT_PREFIX+"name"), equalTo(name1));
+        assertThat(json2.getString(CLIENT_PREFIX+"name"), equalTo(name2));
         assertThat(json3.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
         assertThat(json4.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
         //Getting all clients

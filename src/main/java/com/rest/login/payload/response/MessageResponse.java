@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rest.login.dto.AnswerDto;
 import com.rest.login.dto.ClientDTO;
 import com.rest.login.dto.EvaluationDTO;
-import com.rest.login.models.Evaluation;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
@@ -13,11 +12,13 @@ import java.util.List;
 import static com.rest.login.enums.EResponses.LISTING_ALL_CLIENTS;
 import static com.rest.login.enums.EResponses.LISTING_ALL_USERS;
 
-//TODO: Změnit pomocí JsonProperty jména (hlavně DTO...) + potom opravit v testech.
+//TODO:1 Změnit pomocí JsonProperty jména (hlavně DTO...) + potom opravit v testech.
+//TODO:2 Možná přesunout konstruktory do samotné factory.
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageResponse {
     private String message;
-    private ClientDTO response;
+    @JsonProperty("client")
+    private ClientDTO clientDTO;
     @JsonProperty("clients")
     private List<ClientDTO> clientDTOsList;
     private List<EvaluationDTO> evaluationsList;
@@ -32,7 +33,7 @@ public class MessageResponse {
 
     public MessageResponse(String message, ClientDTO clientDTO) {
         this.message = message;
-        this.response = clientDTO;
+        this.clientDTO = clientDTO;
     }
 
     public MessageResponse(String message, EvaluationDTO evaluation) {
@@ -69,18 +70,6 @@ public class MessageResponse {
         return messageResponse;
     }
 
-    public List<AnswerDto> getAnswerDtoList() {
-        return answerDtoList;
-    }
-
-    public void setAnswerDtoList(List<AnswerDto> answerDtoList) {
-        this.answerDtoList = answerDtoList;
-    }
-
-    public void setEvaluation(EvaluationDTO evaluation) {
-        this.evaluation = evaluation;
-    }
-
     public String getMessage() {
         return message;
     }
@@ -89,12 +78,20 @@ public class MessageResponse {
         this.message = message;
     }
 
-    public ClientDTO getClient() {
-        return response;
+    public ClientDTO getClientDTO() {
+        return clientDTO;
     }
 
-    public void setClient(ClientDTO clientDTO) {
-        this.response = clientDTO;
+    public void setClientDTO(ClientDTO clientDTO) {
+        this.clientDTO = clientDTO;
+    }
+
+    public List<ClientDTO> getClientDTOsList() {
+        return clientDTOsList;
+    }
+
+    public void setClientDTOsList(List<ClientDTO> clientDTOsList) {
+        this.clientDTOsList = clientDTOsList;
     }
 
     public List<EvaluationDTO> getEvaluationsList() {
@@ -105,28 +102,20 @@ public class MessageResponse {
         this.evaluationsList = evaluationsList;
     }
 
-    public ClientDTO getResponse() {
-        return response;
+    public List<AnswerDto> getAnswerDtoList() {
+        return answerDtoList;
     }
 
-    public void setResponse(ClientDTO response) {
-        this.response = response;
+    public void setAnswerDtoList(List<AnswerDto> answerDtoList) {
+        this.answerDtoList = answerDtoList;
     }
 
     public EvaluationDTO getEvaluation() {
         return evaluation;
     }
 
-    public void setEvaluationDTO(EvaluationDTO evaluation) {
+    public void setEvaluation(EvaluationDTO evaluation) {
         this.evaluation = evaluation;
-    }
-
-    public UserDetails getUserDetails() {
-        return userDetails;
-    }
-
-    public void setUserDetails(UserDetails userDetails) {
-        this.userDetails = userDetails;
     }
 
     public List<UserDetails> getUserDetailsList() {
@@ -137,11 +126,11 @@ public class MessageResponse {
         this.userDetailsList = userDetailsList;
     }
 
-    public List<ClientDTO> getClientDTOsList() {
-        return clientDTOsList;
+    public UserDetails getUserDetails() {
+        return userDetails;
     }
 
-    public void setClientDTOsList(List<ClientDTO> clientDTOsList) {
-        this.clientDTOsList = clientDTOsList;
+    public void setUserDetails(UserDetails userDetails) {
+        this.userDetails = userDetails;
     }
 }
