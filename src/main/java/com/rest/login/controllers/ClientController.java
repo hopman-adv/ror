@@ -1,6 +1,8 @@
 package com.rest.login.controllers;
 
 import com.rest.login.dto.ClientDTO;
+import com.rest.login.models.Board;
+import com.rest.login.models.Client;
 import com.rest.login.payload.request.AddClientRequest;
 import com.rest.login.payload.response.MessageResponse;
 import com.rest.login.repository.ClientRepository;
@@ -11,12 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.NoSuchElementException;
-import static com.rest.login.enums.EResponses.CLIENT_NOT_FOUND;
 
-import static com.rest.login.enums.EResponses.CLIENT_DELETED;
+import static com.rest.login.enums.EResponses.*;
+import static com.rest.login.payload.response.MessageResponse.createMessageResponseWithClientDTOsList;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -34,22 +37,33 @@ public class ClientController {
 
     @GetMapping("/clients")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-    public List<ClientDTO> retriveAllClients() {
-        return clientService.getAllClientsDTO();
+    public ResponseEntity<MessageResponse> retriveAllClients() {
+        return ResponseEntity.ok().body(createMessageResponseWithClientDTOsList(clientService.getAllClientsDTO()));
     }
 
     @GetMapping("/clients/{id}")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ClientDTO retrieveAnyClientById(@PathVariable Long id) {
-        return new ClientDTO(clientRepository.getById(id));
+    public ResponseEntity<MessageResponse> retrieveAnyClientById(@PathVariable Long id) {
+        Client client;
+        try {
+            client = clientService.getClientById(id);
+        } catch (EntityNotFoundException | NoSuchElementException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
+        }
+        return ResponseEntity.ok().body(new MessageResponse(CLIENT_FOUND.getMessage(), clientService.getClientDTO(client)));
     }
 
     @GetMapping("/users/{id}/clients")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
-    public List<ClientDTO> retrieveAllClientsByUserId(@PathVariable Long id) {
-        return clientService.getAllUsersClientsDTOsByUserId(id);
+    public ResponseEntity<MessageResponse> retrieveAllClientsByUserId(@PathVariable Long id) {
+        List<ClientDTO> list = clientService.getAllUsersClientsDTOsByUserId(id);
+        if(list.isEmpty()) {
+            return ResponseEntity.ok().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
+        }
+        return ResponseEntity.ok().body(
+                createMessageResponseWithClientDTOsList(list));
     }
-
+//TODO: pokračovat zde!
     @GetMapping("/users/{userId}/clients/{clientId}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
     public ClientDTO retrieveOwnedClientById(@PathVariable Long userId, @PathVariable Long clientId) {

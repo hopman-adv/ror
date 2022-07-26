@@ -7,6 +7,7 @@ import com.rest.login.payloads.TestUserPayload;
 import com.sun.xml.bind.v2.TODO;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import org.fluttercode.datafactory.impl.DataFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.rest.login.data.UserSession.TOKEN;
-import static com.rest.login.data.UserSession.USER_ID;
+import static com.rest.login.data.UserSession.*;
 import static com.rest.login.payload.request.AddClientRequest.*;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -57,6 +57,14 @@ public class ClientOperations {
                 .when().
                 post("https://localhost:8443/api/data/users/{id}/clients", userId)
                 .jsonPath();
+    }
+
+    private Response getClients(String userId, String token) {
+        return given().header("Authorization", "Bearer "+ token)
+                .relaxedHTTPSValidation()
+                .contentType(ContentType.JSON)
+                .when().
+                get("https://localhost:8443/api/data/users/{id}/clients", userId);
     }
 
 
@@ -193,6 +201,18 @@ public class ClientOperations {
         JsonPath json = editClient(clientId, createNameRequest("Josef"));
         log.info(json.prettify());
         return json;
+    }
+
+    public JsonPath getAllUsersClientsFirstUser() {
+        return getClients(USER_ID, TOKEN).jsonPath();
+    }
+
+    public JsonPath getAllUsersClientsSecondUser() {
+        return getClients(USER2_ID, TOKEN2).jsonPath();
+    }
+
+    public Response getAllUsersSpecificUser(String id, String token) {
+        return getClients(id, token);
     }
 
 }

@@ -78,11 +78,12 @@ public class DataAccessTest {
 
     @Test
     void userCanSeeOnlyHisClients() {
+        //Data of 2 client, one for each user.
         Long id1 = client.getLong("id");
         Long id2 = client2.getLong("id");
         String name1 = client.getString("name");
         String name2 = client2.getString("name");
-
+        //Cross check if users can get data of clients and cannot get another user ones.
         JsonPath json1 = clientOperations.checkClientByUserIdClientId(id1, USER_ID, TOKEN);
         JsonPath json2 = clientOperations.checkClientByUserIdClientId(id2, USER2_ID, TOKEN2);
         JsonPath json3 = clientOperations.checkClientByUserIdClientId(id1, USER2_ID, TOKEN2);
@@ -92,6 +93,25 @@ public class DataAccessTest {
         assertThat(json2.getString("name"), equalTo(name2));
         assertThat(json3.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
         assertThat(json4.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
+        //Getting all clients
+        JsonPath jsonAll1 = clientOperations.getAllUsersClientsFirstUser();
+        JsonPath jsonAll2 = clientOperations.getAllUsersClientsSecondUser();
+        //Checking count of clients
+        assertThat(jsonAll1.getList("clients").size(), equalTo(1));
+        assertThat(jsonAll2.getList("clients").size(), equalTo(1));
+        //Adding 2 clients for user 1.
+        clientOperations.createAndReturnRandomNameClient();
+        clientOperations.createAndReturnRandomNameClient();
+        //Adding 1 client to user 2.
+        clientOperations.createAndReturnRandomNameClient(USER2_ID, TOKEN2);
+        //Checking clients count again.
+        jsonAll1 = clientOperations.getAllUsersClientsFirstUser();
+        jsonAll2 = clientOperations.getAllUsersClientsSecondUser();
+        Response jsonAll3 = clientOperations.getAllUsersSpecificUser(USER2_ID, TOKEN);
+        assertThat(jsonAll1.getList("clients").size(), equalTo(3));
+        assertThat(jsonAll2.getList("clients").size(), equalTo(2));
+        assertThat(jsonAll3.getStatusCode(), equalTo(403));
+
     }
 
     @Test

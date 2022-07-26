@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -94,19 +95,20 @@ public class EvaluationService {
     }
 
     public ResponseEntity<MessageResponse> createEvaluation(Long clientId, AddEvaluationRequest addEvaluationRequest) {
-        Client client = clientService.getClientById(clientId);
-
-        if (client == null) {
+        Client client;
+        try {
+            client = clientService.getClientById(clientId);
+        } catch (EntityNotFoundException | NoSuchElementException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
-        } else {
-            Evaluation evaluation;
-            if (addEvaluationRequest == null) {
-                evaluation = createBasicEvaluation(client);
-            } else {
-                evaluation = createBasicEvaluationWithDescription(client, addEvaluationRequest);
-            }
-            return ResponseEntity.ok().body(new MessageResponse(EVALUATION_ADDED.getMessage(), new EvaluationDTO(evaluation)));
         }
+
+        Evaluation evaluation;
+        if (addEvaluationRequest == null) {
+            evaluation = createBasicEvaluation(client);
+        } else {
+            evaluation = createBasicEvaluationWithDescription(client, addEvaluationRequest);
+        }
+        return ResponseEntity.ok().body(new MessageResponse(EVALUATION_ADDED.getMessage(), new EvaluationDTO(evaluation)));
     }
 
     public ResponseEntity<MessageResponse> getAllClientsEvaluations(Client client) {

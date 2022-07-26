@@ -10,10 +10,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
+import static com.rest.login.enums.EResponses.LISTING_ALL_CLIENTS;
+import static com.rest.login.enums.EResponses.LISTING_ALL_USERS;
+
+//TODO: Změnit pomocí JsonProperty jména (hlavně DTO...) + potom opravit v testech.
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageResponse {
     private String message;
     private ClientDTO response;
+    @JsonProperty("clients")
+    private List<ClientDTO> clientDTOsList;
     private List<EvaluationDTO> evaluationsList;
     private List<AnswerDto> answerDtoList;
     private EvaluationDTO evaluation;
@@ -39,9 +45,16 @@ public class MessageResponse {
         this.userDetails = userDetails;
     }
 
-    public MessageResponse(String message, List<UserDetails> userDetailsList) {
-        this.message = message;
-        this.userDetailsList = userDetailsList;
+    public static MessageResponse createMessageResponseWithUserDetailsList(List<UserDetails> userDetailsList) {
+        MessageResponse messageResponse = new MessageResponse(LISTING_ALL_USERS.getMessage());
+        messageResponse.setUserDetailsList(userDetailsList);
+        return messageResponse;
+    }
+
+    public static MessageResponse createMessageResponseWithClientDTOsList(List<ClientDTO> clientDTOsList) {
+        MessageResponse messageResponse = new MessageResponse(LISTING_ALL_CLIENTS.getMessage());
+        messageResponse.setClientDTOsList(clientDTOsList);
+        return messageResponse;
     }
 
     public static MessageResponse createMessageResponseWithEvaluationDTOs(String message, List<EvaluationDTO> evaluationsList) {
@@ -122,5 +135,13 @@ public class MessageResponse {
 
     public void setUserDetailsList(List<UserDetails> userDetailsList) {
         this.userDetailsList = userDetailsList;
+    }
+
+    public List<ClientDTO> getClientDTOsList() {
+        return clientDTOsList;
+    }
+
+    public void setClientDTOsList(List<ClientDTO> clientDTOsList) {
+        this.clientDTOsList = clientDTOsList;
     }
 }

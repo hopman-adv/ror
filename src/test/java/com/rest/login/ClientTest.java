@@ -56,6 +56,17 @@ public class ClientTest {
     }
 
     @Test
+    void getAllClientsFromUser() {
+        clientOperations.createAndReturnRandomNameClient();
+        clientOperations.createAndReturnRandomNameClient();
+        clientOperations.createAndReturnRandomNameClient();
+        clientOperations.createAndReturnRandomNameClient();
+
+        JsonPath json = clientOperations.getAllUsersClientsFirstUser();
+        assertThat(json.getList("clients").size(), equalTo(4));
+    }
+
+    @Test
     void createOnlyNameClient() {
         JsonPath client = clientOperations.createAndReturnRandomNameClient();
         log.info(client.prettify());

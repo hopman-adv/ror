@@ -1,6 +1,7 @@
 package com.rest.login.controllers;
 
 import static com.rest.login.enums.EResponses.*;
+import static com.rest.login.payload.response.MessageResponse.createMessageResponseWithUserDetailsList;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -62,8 +63,7 @@ public class UserController {
     @GetMapping("/users")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<MessageResponse> retriveAllUsers() {
-        return ResponseEntity.ok().body(
-                new MessageResponse(LISTING_ALL_USERS.getMessage(), userDetailsService.getAllUsers()));
+        return ResponseEntity.ok().body(createMessageResponseWithUserDetailsList(userDetailsService.getAllUsers()));
     }
 
     @PutMapping("/users/{id}")

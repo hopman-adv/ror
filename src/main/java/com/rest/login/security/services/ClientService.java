@@ -66,8 +66,9 @@ public class ClientService {
     }
 
     public List<ClientDTO> getAllUsersClientsDTOsByUserId(Long id) {
-        List<ClientDTO> list = getAllClientsDTO();
-        return list.stream().filter(client -> Objects.equals(client.getUserId(), id)).collect(Collectors.toList());
+        return getAllClientsDTO().stream()
+                .filter(client -> Objects.equals(client.getUserId(), id))
+                .collect(Collectors.toList());
     }
 
     public ClientDTO getClientDTOByUserIdAndClientId(Long userId, Long clientId) throws NoSuchElementException {
@@ -80,13 +81,7 @@ public class ClientService {
     }
 
     public Client getClientById(Long clientId) {
-        Client client = null;
-        try {
-            client = clientRepository.findById(clientId).get();
-        } catch (EntityNotFoundException | NoSuchElementException e) {
-            return null;
-        }
-        return client;
+        return clientRepository.findById(clientId).get();
     }
 
     public ResponseEntity<MessageResponse> editAndSaveClient(Long clientId, AddClientRequest addClientRequest) {
@@ -109,5 +104,9 @@ public class ClientService {
         clientRepository.save(client);
 
         return ResponseEntity.ok(new MessageResponse(CLIENT_UPDATED.getMessage(), getClientDTOByUserIdAndClientId(userId, clientId)));
+    }
+
+    public ClientDTO getClientDTO(Client client) {
+        return new ClientDTO(client);
     }
 }
