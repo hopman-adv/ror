@@ -1,7 +1,6 @@
 package com.rest.login.controllers;
 
 import com.rest.login.dto.ClientDTO;
-import com.rest.login.models.Board;
 import com.rest.login.models.Client;
 import com.rest.login.payload.request.AddClientRequest;
 import com.rest.login.payload.response.MessageResponse;
@@ -12,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
@@ -76,11 +76,21 @@ public class ClientController {
         }
         return ResponseEntity.ok().body(new MessageResponse(CLIENT_FOUND.getMessage(), clientDTO));
     }
-    //TODO: zde pokračovat
+    //TODO: Opravit validace u requestu na nějakou smysluplnou hlášku.
     @PostMapping("/users/{id}/clients")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
-    public ClientDTO createClient(@Valid @RequestBody AddClientRequest addClientRequest, @PathVariable Long id) {
-        return clientService.createClient(id, addClientRequest);
+    public ResponseEntity<MessageResponse> createClient(@Valid @RequestBody AddClientRequest addClientRequest, @PathVariable Long id, Errors errors) {
+        if(errors.hasErrors()) {
+            return ResponseEntity.badRequest().body(new MessageResponse(VALIDATION_FAILED.getMessage()));
+        }
+        ClientDTO clientDTO;
+        try {
+            clientDTO = clientService.createClient(id, addClientRequest);
+        }catch(IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(VALIDATION_FAILED.getMessage()));
+        }
+
+        return ResponseEntity.ok().body(new MessageResponse(CLIENT_CREATED.getMessage(), clientDTO));
     }
 
     @DeleteMapping("/users/{userId}/clients/{clientId}")

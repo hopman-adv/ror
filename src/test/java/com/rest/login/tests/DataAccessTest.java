@@ -1,4 +1,4 @@
-package com.rest.login;
+package com.rest.login.tests;
 
 import com.rest.login.data.UserSession;
 import com.rest.login.models.Board;
@@ -17,11 +17,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.rest.login.TestUtils.getClientId;
+import static com.rest.login.TestUtils.getClientParameter;
 import static com.rest.login.data.UserSession.*;
 import static com.rest.login.enums.EResponses.CLIENT_NOT_FOUND;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -80,18 +81,18 @@ public class DataAccessTest {
     @Test
     void userCanSeeOnlyHisClients() {
         //Data of 2 client, one for each user.
-        Long id1 = client.getLong("id");
-        Long id2 = client2.getLong("id");
-        String name1 = client.getString("name");
-        String name2 = client2.getString("name");
+        Long id1 = getClientId(client);
+        Long id2 = getClientId(client2);
+        String name1 = getClientParameter(client, "name");
+        String name2 = getClientParameter(client2, "name");
         //Cross check if users can get data of clients and cannot get another user ones.
         JsonPath json1 = clientOperations.checkClientByUserIdClientId(id1, USER_ID, TOKEN);
         JsonPath json2 = clientOperations.checkClientByUserIdClientId(id2, USER2_ID, TOKEN2);
         JsonPath json3 = clientOperations.checkClientByUserIdClientId(id1, USER2_ID, TOKEN2);
         JsonPath json4 = clientOperations.checkClientByUserIdClientId(id2, USER_ID, TOKEN);
 
-        assertThat(json1.getString(CLIENT_PREFIX+"name"), equalTo(name1));
-        assertThat(json2.getString(CLIENT_PREFIX+"name"), equalTo(name2));
+        assertThat(getClientParameter(json1, "name"), equalTo(name1));
+        assertThat(getClientParameter(json2, "name"), equalTo(name2));
         assertThat(json3.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
         assertThat(json4.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
         //Getting all clients
@@ -117,8 +118,8 @@ public class DataAccessTest {
 
     @Test
     void userCanSeeOnlyHisEvaluations() {
-        Long id1 = client.getLong("id");
-        Long id2 = client2.getLong("id");
+        Long id1 = getClientId(client);
+        Long id2 = getClientId(client2);
         String name1 = client.getString("name");
         String name2 = client2.getString("name");
 
@@ -160,8 +161,8 @@ public class DataAccessTest {
 
     @Test
     void create2EvaluationsAndBoards() {
-        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(client.getLong("id"));
-        JsonPath evaluation2 = evaluationOperations.createEvaluationWithDescription(client.getLong("id"));
+        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(getClientId(client));
+        JsonPath evaluation2 = evaluationOperations.createEvaluationWithDescription(getClientId(client));
 
         Long evaluationId = evaluation.getLong("evaluation.id");
         List<Board> list = boardRepository.findByEvaluation_id(evaluationId);

@@ -1,5 +1,6 @@
-package com.rest.login;
+package com.rest.login.tests;
 
+import com.rest.login.TestUtils;
 import com.rest.login.data.UserSession;
 import com.rest.login.models.Board;
 import com.rest.login.operations.ClientOperations;
@@ -15,13 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.rest.login.UserSignupTest.USER_NAME;
+import static com.rest.login.TestUtils.getClientId;
+import static com.rest.login.tests.UserSignupTest.USER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static com.rest.login.operations.EvaluationOperations.DESCRIPTION;
@@ -49,7 +50,6 @@ public class EvaluationTest {
     @Autowired
     private BoardRepository boardRepository;
 
-
     Logger log = LoggerFactory.getLogger(EvaluationTest.class);
 
     JsonPath client = null;
@@ -63,24 +63,12 @@ public class EvaluationTest {
 
     @AfterEach
     void cleanupUsers() {
-        if (client2 == null) {
-            userOperations.deleteUserByUsernameAndClientId(USER_NAME, client.getLong("id"));
-        } else {
-            Long id1 = client.getLong("id");
-            Long id2 = client2.getLong("id");
-            userOperations.deleteAllBoards();
-            userOperations.deleteEvaluationsFromClient(id1);
-            userOperations.deleteEvaluationsFromClient(id2);
-
-            userOperations.deleteClientById(id1);
-            userOperations.deleteClientById(id2);
-            userOperations.deleteUserByUsername(USER_NAME);
-        }
+        userOperations.deleteAll();
     }
 
     @Test
     void createEvaluationWithDescription() {
-        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(client.getLong("id"));
+        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(getClientId(client));
 
         assertThat(evaluation.getString("evaluation.status"), equalTo("NEW"));
         assertThat(evaluation.getString("evaluation.description"), equalTo(DESCRIPTION));
@@ -90,7 +78,7 @@ public class EvaluationTest {
     @Test
     void createEvaluationWithoutDescription() {
         log.info(client.prettify());
-        JsonPath evaluation = evaluationOperations.createEvaluationWithoutDescription(client.getLong("id"));
+        JsonPath evaluation = evaluationOperations.createEvaluationWithoutDescription(getClientId(client));
         log.info(evaluation.prettify());
         assertThat(evaluation.getString("evaluation.status"), equalTo("NEW"));
         assertThat(evaluation.getString("evaluation.description"), equalTo(null));
@@ -99,7 +87,7 @@ public class EvaluationTest {
 
     @Test
     void createEvaluationsAndListThem() {
-        Long clientId = client.getLong("id");
+        Long clientId = getClientId(client);
         int COUNT = 4;
 
         evaluationOperations.createMoreEvaluationsAtOnce(COUNT, clientId);
@@ -110,7 +98,7 @@ public class EvaluationTest {
 
     @Test
     void create2ClientsWithDifferentNumberOfEvaluations() {
-        Long firstClientId = client.getLong("id");
+        Long firstClientId = getClientId(client);
         int evalCount1 = 4;
         int evalCount2 = 2;
 
@@ -121,7 +109,7 @@ public class EvaluationTest {
         log.info("Klient 1 počet evaluations: " + count1);
 
         client2 = clientOperations.createAndReturnRandomNameClient();
-        Long secondClientId = client2.getLong("id");
+        Long secondClientId = getClientId(client2);
 
         evaluationOperations.createMoreEvaluationsAtOnce(evalCount2, secondClientId);
 
@@ -140,7 +128,7 @@ public class EvaluationTest {
 
     @Test
     void addingToNonexistingClient() {
-        Long NON_EXISTING_CLIENT_ID = client.getLong("id") + 1;
+        Long NON_EXISTING_CLIENT_ID = getClientId(client) + 1;
         JsonPath json = evaluationOperations.createEvaluationWithoutDescription(NON_EXISTING_CLIENT_ID);
         log.info(json.prettify());
         assertThat(json.getString("message"), equalTo(NON_EXISTING_CLIENT_MESSAGE));
@@ -148,8 +136,8 @@ public class EvaluationTest {
 
     @Test
     void create2EvaluationsAndBoards() {
-        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(client.getLong("id"));
-        JsonPath evaluation2 = evaluationOperations.createEvaluationWithDescription(client.getLong("id"));
+        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(getClientId(client));
+        JsonPath evaluation2 = evaluationOperations.createEvaluationWithDescription(getClientId(client));
 
         Long evaluationId = evaluation.getLong("evaluation.id");
         List<Board> list = boardRepository.findByEvaluation_id(evaluationId);

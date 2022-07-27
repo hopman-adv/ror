@@ -7,7 +7,7 @@ import javax.validation.constraints.Size;
 
 public class AddClientRequest {
 
-    @NotBlank
+    @NotBlank(message = "Name is missing.")
     //@Pattern(regexp = "^[a-žA-Ž0-9-_!? ]{1,20}")
     private String name;
 

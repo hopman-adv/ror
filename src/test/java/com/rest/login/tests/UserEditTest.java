@@ -1,10 +1,8 @@
-package com.rest.login;
+package com.rest.login.tests;
 
 import com.rest.login.data.UserSession;
-import com.rest.login.models.Client;
 import com.rest.login.operations.ClientOperations;
 import com.rest.login.operations.UserOperations;
-import com.rest.login.payloads.TestUserPayload;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
@@ -15,9 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import static com.rest.login.data.UserSession.TOKEN2;
 import static com.rest.login.data.UserSession.USER2_ID;

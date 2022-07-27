@@ -26,6 +26,8 @@ public class MessageResponse {
     private EvaluationDTO evaluation;
     private List<UserDetails> userDetailsList;
     private UserDetails userDetails;
+    @JsonProperty("details")
+    private ErrorResponse errorResponse;
 
     public MessageResponse(String message) {
         this.message = message;
@@ -68,6 +70,10 @@ public class MessageResponse {
         MessageResponse messageResponse = new MessageResponse(message);
         messageResponse.setAnswerDtoList(answerDtoList);
         return messageResponse;
+    }
+
+    public MessageResponse(ErrorResponse errorResponse) {
+        this.errorResponse = errorResponse;
     }
 
     public String getMessage() {
@@ -132,5 +138,13 @@ public class MessageResponse {
 
     public void setUserDetails(UserDetails userDetails) {
         this.userDetails = userDetails;
+    }
+
+    public ErrorResponse getErrorResponse() {
+        return errorResponse;
+    }
+
+    public void setErrorResponse(ErrorResponse errorResponse) {
+        this.errorResponse = errorResponse;
     }
 }

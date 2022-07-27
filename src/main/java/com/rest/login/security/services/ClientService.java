@@ -35,7 +35,7 @@ public class ClientService {
     @Autowired
     private UserRepository userRepository;
 
-    private Client createClientDependingOnPayload(AddClientRequest addClientRequest, User user) {
+    private Client createClientDependingOnPayload(AddClientRequest addClientRequest, User user) throws UnsupportedOperationException{
         if (addClientRequest.getName() == null) {
             throw new UnsupportedOperationException(MISSING_NAME_IN_BODY.getMessage());
         }

@@ -1,4 +1,4 @@
-package com.rest.login;
+package com.rest.login.tests;
 
 import com.rest.login.data.UserSession;
 import com.rest.login.operations.UserOperations;

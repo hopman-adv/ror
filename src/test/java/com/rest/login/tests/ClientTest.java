@@ -1,13 +1,16 @@
-package com.rest.login;
+package com.rest.login.tests;
 
 import com.rest.login.data.UserSession;
 import com.rest.login.dto.ClientDTO;
 import com.rest.login.operations.ClientOperations;
 import com.rest.login.operations.UserOperations;
 
-import static com.rest.login.DataAccessTest.CLIENT_PREFIX;
+import static com.rest.login.TestUtils.*;
+import static com.rest.login.tests.DataAccessTest.CLIENT_PREFIX;
+import static com.rest.login.enums.EResponses.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.rest.login.security.services.ClientService;
 import groovy.util.logging.Slf4j;
 import io.restassured.path.json.JsonPath;
@@ -21,11 +24,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static com.rest.login.UserSignupTest.USER_NAME;
+import static com.rest.login.tests.UserSignupTest.USER_NAME;
 import static com.rest.login.data.UserSession.USER_ID;
-import static com.rest.login.enums.EResponses.CLIENT_NOT_FOUND;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
@@ -80,12 +81,12 @@ public class ClientTest {
         JsonPath client = clientOperations.createAndReturnRandomNameClient();
         log.info(client.prettify());
 
-        assertThat(client.getString("name"), not(emptyOrNullString()));
-        assertThat(client.getString("id"), not(emptyOrNullString()));
-        assertThat(client.getString("email"), emptyOrNullString());
-        assertThat(client.getString("description"), emptyOrNullString());
+        assertThat(getClientParameter(client, "name"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "id"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "email"), emptyOrNullString());
+        assertThat(getClientParameter(client, "description"), emptyOrNullString());
 
-        JsonPath json = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
+        JsonPath json = clientOperations.checkClientByUserIdClientId(getClientId(client));
         log.info(json.prettify());
     }
 
@@ -94,12 +95,12 @@ public class ClientTest {
         JsonPath client = clientOperations.createAndReturnRandomNameEmailClient();
         log.info(client.prettify());
 
-        assertThat(client.getString("name"), not(emptyOrNullString()));
-        assertThat(client.getString("id"), not(emptyOrNullString()));
-        assertThat(client.getString("email"), not(emptyOrNullString()));
-        assertThat(client.getString("description"), emptyOrNullString());
+        assertThat(getClientParameter(client, "name"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "id"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "email"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "description"), emptyOrNullString());
 
-        JsonPath json = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
+        JsonPath json = clientOperations.checkClientByUserIdClientId(getClientId(client));
         log.info(json.prettify());
     }
 
@@ -108,12 +109,12 @@ public class ClientTest {
         JsonPath client = clientOperations.createAndReturnRandomNameEmailDescriptionClient();
         log.info(client.prettify());
 
-        assertThat(client.getString("name"), not(emptyOrNullString()));
-        assertThat(client.getString("id"), not(emptyOrNullString()));
-        assertThat(client.getString("email"), not(emptyOrNullString()));
-        assertThat(client.getString("description"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "name"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "id"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "email"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "description"), not(emptyOrNullString()));
 
-        JsonPath json = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
+        JsonPath json = clientOperations.checkClientByUserIdClientId(getClientId(client));
         log.info(json.prettify());
     }
 
@@ -122,21 +123,22 @@ public class ClientTest {
         JsonPath client = clientOperations.createAndReturnRandomNameDescriptionClient();
         log.info(client.prettify());
 
-        assertThat(client.getString("name"), not(emptyOrNullString()));
-        assertThat(client.getString("id"), not(emptyOrNullString()));
-        assertThat(client.getString("email"), emptyOrNullString());
-        assertThat(client.getString("description"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "name"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "id"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "email"), emptyOrNullString());
+        assertThat(getClientParameter(client, "description"), not(emptyOrNullString()));
 
-        JsonPath json = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
+        JsonPath json = clientOperations.checkClientByUserIdClientId(getClientId(client));
         log.info(json.prettify());
     }
 
     @Test
     void createMissingNameClient() {
         JsonPath client = clientOperations.createAndReturnMissingNameClient();
-
-        assertThat(client.getString("status"), equalTo("400"));
-        assertThat(client.getString("message"), equalTo("Validation failed for object='addClientRequest'. Error count: 1"));
+        log.info(client.prettify());
+        assertThat(client.getString("details.type"), equalTo(VALIDATION_FAILED.getMessage()));
+        assertThat(client.getString("details.fieldName"), equalTo("name"));
+        assertThat(client.getString("details.cause"), equalTo("Name is missing."));
     }
 
     @Test
@@ -144,12 +146,12 @@ public class ClientTest {
         JsonPath client = clientOperations.createAndReturnSpecificNameClient("češký muž");
         log.info(client.prettify());
 
-        assertThat(client.getString("name"), not(emptyOrNullString()));
-        assertThat(client.getString("id"), not(emptyOrNullString()));
-        assertThat(client.getString("email"), not(emptyOrNullString()));
-        assertThat(client.getString("description"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "name"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "id"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "email"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "description"), not(emptyOrNullString()));
 
-        JsonPath json = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
+        JsonPath json = clientOperations.checkClientByUserIdClientId(getClientId(client));
         log.info(json.prettify());
     }
 
@@ -157,19 +159,16 @@ public class ClientTest {
     void createWrongNameClient() {
         JsonPath client = clientOperations.createAndReturnSpecificNameClient("/Test/");
         log.info(client.prettify());
-        assertThat(client.getString("status"), equalTo("500"));
-        assertThat(client.getString("message"), stringContainsInOrder("Validation failed for classes"));
+        assertThat(client.getString("details.type"), equalTo(VALIDATION_FAILED.getMessage()));
 
 
         client = clientOperations.createAndReturnSpecificNameClient("#pepa");
         log.info(client.prettify());
-        assertThat(client.getString("status"), equalTo("500"));
-        assertThat(client.getString("message"), stringContainsInOrder("Validation failed for classes"));
+        assertThat(client.getString("details.type"), equalTo(VALIDATION_FAILED.getMessage()));
 
         client = clientOperations.createAndReturnSpecificNameClient("123456789012345678901");
         log.info(client.prettify());
-        assertThat(client.getString("status"), equalTo("500"));
-        assertThat(client.getString("message"), stringContainsInOrder("Validation failed for classes"));
+        assertThat(client.getString("details.type"), equalTo(VALIDATION_FAILED.getMessage()));
     }
 
     @Test
@@ -177,21 +176,21 @@ public class ClientTest {
         JsonPath client = clientOperations.createAndReturnSpecificNameClient("test-client");
         log.info(client.prettify());
 
-        assertThat(client.getString("name"), not(emptyOrNullString()));
-        assertThat(client.getString("id"), not(emptyOrNullString()));
-        assertThat(client.getString("email"), not(emptyOrNullString()));
-        assertThat(client.getString("description"), not(emptyOrNullString()));
-        Long firstId = client.getLong("id");
+        assertThat(getClientParameter(client, "name"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "id"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "email"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "description"), not(emptyOrNullString()));
+        Long firstId = getClientId(client);
 
         client = clientOperations.createAndReturnSpecificNameClient("test-client");
 
-        assertThat(client.getLong("id") - 1, equalTo(firstId));
-        assertThat(client.getString("name"), not(emptyOrNullString()));
-        assertThat(client.getString("id"), not(emptyOrNullString()));
-        assertThat(client.getString("email"), not(emptyOrNullString()));
-        assertThat(client.getString("description"), not(emptyOrNullString()));
+        assertThat(getClientId(client) - 1, equalTo(firstId));
+        assertThat(getClientParameter(client, "name"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "id"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "email"), not(emptyOrNullString()));
+        assertThat(getClientParameter(client, "description"), not(emptyOrNullString()));
 
-        JsonPath json = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
+        JsonPath json = clientOperations.checkClientByUserIdClientId(getClientId(client));
         log.info(json.prettify());
     }
 
@@ -200,12 +199,12 @@ public class ClientTest {
         JsonPath client = clientOperations.createAndReturnRandomNameEmailDescriptionClient();
         log.info(client.prettify());
 
-        JsonPath response = clientOperations.deleteClientById(client.getLong("id"));
+        JsonPath response = clientOperations.deleteClientById(getClientId(client));
         log.info(response.prettify());
 
         assertThat(response.getString("message"), equalTo("Client deleted!"));
 
-        JsonPath json = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
+        JsonPath json = clientOperations.checkClientByUserIdClientId(getClientId(client));
         assertThat(json.getString("message"), equalTo("Error: Client not found in database!"));
     }
 
@@ -224,42 +223,42 @@ public class ClientTest {
         JsonPath client = clientOperations.createAndReturnRandomNameEmailDescriptionClient();
         log.info(client.prettify());
 
-        JsonPath json = clientOperations.editAllAttributesClientById(client.getLong("id"));
+        JsonPath json = clientOperations.editAllAttributesClientById(getClientId(client));
 
         assertThat(json.getString("message"), equalTo("Client updated."));
-        assertThat(json.get(CLIENT_PREFIX+"name"), equalTo("Josef"));
-        assertThat(json.get(CLIENT_PREFIX+"email"), equalTo("josef@mai.com"));
-        assertThat(json.get(CLIENT_PREFIX+"description"), equalTo("Kecy na nic"));
-        assertThat(json.getLong(CLIENT_PREFIX+"id"), equalTo(client.getLong("id")));
+        assertThat(json.get(CLIENT_PREFIX + "name"), equalTo("Josef"));
+        assertThat(json.get(CLIENT_PREFIX + "email"), equalTo("josef@mai.com"));
+        assertThat(json.get(CLIENT_PREFIX + "description"), equalTo("Kecy na nic"));
+        assertThat(json.getLong(CLIENT_PREFIX + "id"), equalTo(getClientId(client)));
 
-        JsonPath updatedClientJson = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
-        assertThat(updatedClientJson.get(CLIENT_PREFIX+"name"), equalTo("Josef"));
-        assertThat(updatedClientJson.get(CLIENT_PREFIX+"email"), equalTo("josef@mai.com"));
-        assertThat(updatedClientJson.get(CLIENT_PREFIX+"description"), equalTo("Kecy na nic"));
+        JsonPath updatedClientJson = clientOperations.checkClientByUserIdClientId(getClientId(client));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX + "name"), equalTo("Josef"));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX + "email"), equalTo("josef@mai.com"));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX + "description"), equalTo("Kecy na nic"));
     }
 
     @Test
     void editClientOnlyName() {
         JsonPath client = clientOperations.createAndReturnRandomNameEmailDescriptionClient();
-        JsonPath json = clientOperations.editNameAttributeClientById(client.getLong("id"));
+        JsonPath json = clientOperations.editNameAttributeClientById(getClientId(client));
 
-        String origEmail = client.getString("email");
-        String origDesc = client.getString("description");
-        Long origId = client.getLong("id");
-        Long origUserId = client.getLong("userId");
+        String origEmail = getClientParameter(client, "email");
+        String origDesc = getClientParameter(client, "description");
+        Long origId = getClientId(client);
+        Long origUserId = getClientLongParameter(client, "userId");
 
         assertThat(json.getString("message"), equalTo("Client updated."));
-        assertThat(json.get(CLIENT_PREFIX+"name"), equalTo("Josef"));
-        assertThat(json.get(CLIENT_PREFIX+"email"), equalTo(origEmail));
-        assertThat(json.get(CLIENT_PREFIX+"description"), equalTo(origDesc));
-        assertThat(json.getLong(CLIENT_PREFIX+"id"), equalTo(origId));
+        assertThat(json.get(CLIENT_PREFIX + "name"), equalTo("Josef"));
+        assertThat(json.get(CLIENT_PREFIX + "email"), equalTo(origEmail));
+        assertThat(json.get(CLIENT_PREFIX + "description"), equalTo(origDesc));
+        assertThat(json.getLong(CLIENT_PREFIX + "id"), equalTo(origId));
 
-        JsonPath updatedClientJson = clientOperations.checkClientByUserIdClientId(client.getLong("id"));
-        assertThat(updatedClientJson.get(CLIENT_PREFIX+"name"), equalTo("Josef"));
-        assertThat(updatedClientJson.get(CLIENT_PREFIX+"email"), equalTo(origEmail));
-        assertThat(updatedClientJson.get(CLIENT_PREFIX+"description"), equalTo(origDesc));
-        assertThat(updatedClientJson.getLong(CLIENT_PREFIX+"id"), equalTo(origId));
-        assertThat(updatedClientJson.getLong(CLIENT_PREFIX+"userId"), equalTo(origUserId));
+        JsonPath updatedClientJson = clientOperations.checkClientByUserIdClientId(getClientId(client));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX + "name"), equalTo("Josef"));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX + "email"), equalTo(origEmail));
+        assertThat(updatedClientJson.get(CLIENT_PREFIX + "description"), equalTo(origDesc));
+        assertThat(updatedClientJson.getLong(CLIENT_PREFIX + "id"), equalTo(origId));
+        assertThat(updatedClientJson.getLong(CLIENT_PREFIX + "userId"), equalTo(origUserId));
     }
 
     @Test

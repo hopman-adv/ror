@@ -1,8 +1,7 @@
-package com.rest.login;
+package com.rest.login.tests;
 
 import com.rest.login.data.UserSession;
 import com.rest.login.enums.EResponses;
-import com.rest.login.models.Board;
 import com.rest.login.operations.BoardAndAnswerOperations;
 import com.rest.login.operations.ClientOperations;
 import com.rest.login.operations.EvaluationOperations;
@@ -18,12 +17,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static com.rest.login.UserSignupTest.USER_NAME;
-import static com.rest.login.operations.EvaluationOperations.DESCRIPTION;
+import static com.rest.login.TestUtils.getClientId;
+import static com.rest.login.tests.UserSignupTest.USER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -69,24 +64,12 @@ public class BoardTest {
 
     @AfterEach
     void cleanupUsers() {
-        if (client2 == null) {
-            userOperations.deleteUserByUsernameAndClientId(USER_NAME, client.getLong("id"));
-        } else {
-            Long id1 = client.getLong("id");
-            Long id2 = client2.getLong("id");
-            userOperations.deleteAllBoards();
-            userOperations.deleteEvaluationsFromClient(id1);
-            userOperations.deleteEvaluationsFromClient(id2);
-
-            userOperations.deleteClientById(id1);
-            userOperations.deleteClientById(id2);
-            userOperations.deleteUserByUsername(USER_NAME);
-        }
+        userOperations.deleteAll();
     }
 
     @Test
     void getAnswersFromNonExistingBoard() {
-        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(client.getLong("id"));
+        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(getClientId(client));
 
         //TODO: až bude controller pro získání all boards -> boardAndAnswerOperations.getAnswersFromBoardById()
         JsonPath json = boardAndAnswerOperations.getAnswersFromBoardById(NON_EXISTING_ID);
