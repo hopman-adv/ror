@@ -84,12 +84,7 @@ public class ClientService {
         return clientRepository.findById(clientId).get();
     }
 
-    public ResponseEntity<MessageResponse> editAndSaveClient(Long clientId, AddClientRequest addClientRequest) {
-        Client client = getClientById(clientId);
-
-        if (client == null) {
-            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
-        }
+    public ClientDTO editAndSaveClient(Client client, AddClientRequest addClientRequest) {
         Long userId = client.getUser().getId();
 
         if (addClientRequest.getName() != null) {
@@ -103,7 +98,7 @@ public class ClientService {
         }
         clientRepository.save(client);
 
-        return ResponseEntity.ok(new MessageResponse(CLIENT_UPDATED.getMessage(), getClientDTOByUserIdAndClientId(userId, clientId)));
+        return getClientDTOByUserIdAndClientId(userId, client.getId());
     }
 
     public ClientDTO getClientDTO(Client client) {

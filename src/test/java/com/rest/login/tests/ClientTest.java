@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.*;
@@ -205,7 +206,7 @@ public class ClientTest {
         assertThat(response.getString("message"), equalTo("Client deleted!"));
 
         JsonPath json = clientOperations.checkClientByUserIdClientId(getClientId(client));
-        assertThat(json.getString("message"), equalTo("Error: Client not found in database!"));
+        assertThat(json.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
     }
 
     @Test
@@ -283,5 +284,10 @@ public class ClientTest {
         assertEquals(json.getString("message"), CLIENT_NOT_FOUND.getMessage());
     }
 
-
+    @Test
+    public void nullProvidedToFindClient() {
+        Exception exception = assertThrows(
+                InvalidDataAccessApiUsageException.class,
+                () -> clientService.getClientById(null));
+    }
 }

@@ -26,7 +26,8 @@ public enum EResponses {
     CLIENT_OWNED_BY_DIFFERENT_USER("Unauthorized access - client owned by different user!"),
     LISTING_ANSWERS_FROM_BOARD("Listing all answers from board!"),
     MISSING_NAME_IN_BODY("Error: Missing name in body!"),
-    VALIDATION_FAILED("Validation failed for request body.");
+    VALIDATION_FAILED("Validation failed for request body."),
+    ID_NULL("Provided ID is null.");
 
 
     private final String message;

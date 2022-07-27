@@ -8,6 +8,7 @@ import com.rest.login.repository.ClientRepository;
 import com.rest.login.repository.UserRepository;
 import com.rest.login.security.services.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -58,7 +59,7 @@ public class ClientController {
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
     public ResponseEntity<MessageResponse> retrieveAllClientsByUserId(@PathVariable Long id) {
         List<ClientDTO> list = clientService.getAllUsersClientsDTOsByUserId(id);
-        if(list.isEmpty()) {
+        if (list.isEmpty()) {
             return ResponseEntity.ok().body(new MessageResponse(CLIENTS_NOT_FOUND.getMessage()));
         }
         return ResponseEntity.ok().body(
@@ -71,25 +72,24 @@ public class ClientController {
         ClientDTO clientDTO;
         try {
             clientDTO = clientService.getClientDTOByUserIdAndClientId(userId, clientId);
-        }catch (NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
         }
         return ResponseEntity.ok().body(new MessageResponse(CLIENT_FOUND.getMessage(), clientDTO));
     }
-    //TODO: Opravit validace u requestu na nějakou smysluplnou hlášku.
+
     @PostMapping("/users/{id}/clients")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
     public ResponseEntity<MessageResponse> createClient(@Valid @RequestBody AddClientRequest addClientRequest, @PathVariable Long id, Errors errors) {
-        if(errors.hasErrors()) {
+        if (errors.hasErrors()) {
             return ResponseEntity.badRequest().body(new MessageResponse(VALIDATION_FAILED.getMessage()));
         }
         ClientDTO clientDTO;
         try {
             clientDTO = clientService.createClient(id, addClientRequest);
-        }catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(VALIDATION_FAILED.getMessage()));
         }
-
         return ResponseEntity.ok().body(new MessageResponse(CLIENT_CREATED.getMessage(), clientDTO));
     }
 
@@ -108,6 +108,15 @@ public class ClientController {
     @PutMapping("/users/{userId}/clients/{clientId}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
     public ResponseEntity<MessageResponse> editClient(@PathVariable Long userId, @PathVariable Long clientId, @Valid @RequestBody AddClientRequest addClientRequest) {
-        return clientService.editAndSaveClient(clientId, addClientRequest);
+        Client client;
+        try {
+            client = clientService.getClientById(clientId);
+        } catch (EntityNotFoundException | NoSuchElementException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
+        } catch (IllegalArgumentException | InvalidDataAccessApiUsageException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(ID_NULL.getMessage()));
+        }
+        ClientDTO clientDTO = clientService.editAndSaveClient(client, addClientRequest);
+        return ResponseEntity.ok().body(new MessageResponse(CLIENT_UPDATED.getMessage(), clientDTO));
     }
 }

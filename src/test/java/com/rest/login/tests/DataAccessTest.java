@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import static com.rest.login.TestUtils.getClientId;
 import static com.rest.login.TestUtils.getClientParameter;
 import static com.rest.login.data.UserSession.*;
+import static com.rest.login.enums.EResponses.CLIENT_DELETED;
 import static com.rest.login.enums.EResponses.CLIENT_NOT_FOUND;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -113,7 +114,20 @@ public class DataAccessTest {
         assertThat(jsonAll1.getList("clients").size(), equalTo(3));
         assertThat(jsonAll2.getList("clients").size(), equalTo(2));
         assertThat(jsonAll3.getStatusCode(), equalTo(403));
+    }
 
+    @Test
+    public void userCanDeleteOnlyHisClient() {
+        Long id1 = getClientId(client);
+        Long id2 = getClientId(client2);
+
+        //First user deletes other user's client by ID.
+        JsonPath json = clientOperations.deleteClientById(id2);
+        assertThat(json.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
+
+        //First user deletes his own client by ID.
+        json = clientOperations.deleteClientById(id1);
+        assertThat(json.getString("message"), equalTo(CLIENT_DELETED.getMessage()));
     }
 
     @Test
