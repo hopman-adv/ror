@@ -39,7 +39,7 @@ public class EvaluationService {
         List<EvaluationDTO> list = getAllEvaluationsDTO();
         return list.stream().filter(evaluation -> Objects.equals(evaluation.getClientId(), clientId) && Objects.equals(evaluation.getId(), evaluationId))
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Error: Evaluation not found!"));
+                .orElseThrow(() -> new NoSuchElementException(EVALUATION_NOT_FOUND.getMessage()));
     }
 
     private Evaluation createBasicEvaluation(Client client) {

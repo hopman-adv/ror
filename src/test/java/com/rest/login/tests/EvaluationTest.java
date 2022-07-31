@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.rest.login.TestUtils.getClientId;
-import static com.rest.login.enums.EResponses.NO_EVALUATIONS_FOR_CLIENT;
+import static com.rest.login.enums.EResponses.*;
 import static com.rest.login.tests.UserSignupTest.USER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -164,5 +164,22 @@ public class EvaluationTest {
         JsonPath json = evaluationOperations.getAllEvaluationsByClientId(getClientId(client));
         System.out.println(json.prettify());
         assertThat(json.getString("message"), equalTo(NO_EVALUATIONS_FOR_CLIENT.getMessage()));
+    }
+
+    @Test
+    void evaluationNotFound() {
+        JsonPath json = evaluationOperations.getEvaluationByClientIdAndEvaluationID(getClientId(client), -1L);
+        System.out.println(json.prettify());
+        assertThat(json.getString("message"), equalTo(EVALUATION_NOT_FOUND.getMessage()));
+    }
+
+    @Test
+    void getSpecificEvaluation() {
+        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(getClientId(client));
+        Long evalId = evaluation.getLong("evaluation.id");
+        JsonPath json = evaluationOperations.getEvaluationByClientIdAndEvaluationID(getClientId(client), evalId);
+        System.out.println(evaluation.prettify());
+        System.out.println(json.prettify());
+        assertThat(json.getString("message"), equalTo(EVALUATION_FOUND.getMessage()));
     }
 }

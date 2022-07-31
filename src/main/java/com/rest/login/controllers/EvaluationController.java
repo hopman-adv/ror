@@ -70,11 +70,13 @@ public class EvaluationController {
         return ResponseEntity.ok().body(createMessageResponseWithEvaluationDTOs(evaluations));
     }
 
-    //    zde jsem
     @GetMapping("/users/{userId}/clients/{clientId}/evaluations/{evalId}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
     public ResponseEntity<MessageResponse> retrieveEvaluationByClientId(@PathVariable Long userId, @PathVariable Long clientId, @PathVariable Long evalId) {
-        return null;//evaluationService.getEvaluationDTOByClientIdAndEvalId(clientId, evalId);
+        Long authorizedClientId = clientService.getClientById(clientId, userId).getId();
+        EvaluationDTO evaluationDTO = evaluationService.getEvaluationDTOByClientIdAndEvalId(authorizedClientId, evalId);
+
+        return ResponseEntity.ok(new MessageResponse(EVALUATION_FOUND.getMessage(), evaluationDTO));
     }
 
     @PostMapping(path = "/users/{id}/clients/{clientId}/evaluations", consumes = "application/json")
