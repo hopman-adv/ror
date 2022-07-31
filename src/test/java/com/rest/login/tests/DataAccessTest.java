@@ -11,6 +11,7 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +25,7 @@ import java.util.stream.Collectors;
 import static com.rest.login.TestUtils.getClientId;
 import static com.rest.login.TestUtils.getClientParameter;
 import static com.rest.login.data.UserSession.*;
-import static com.rest.login.enums.EResponses.CLIENT_DELETED;
-import static com.rest.login.enums.EResponses.CLIENT_NOT_FOUND;
+import static com.rest.login.enums.EResponses.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -131,14 +131,16 @@ public class DataAccessTest {
     }
 
     @Test
-    void userCanSeeOnlyHisEvaluations() {
+    @DisplayName("Client s endpoint returns only his evaluations (in 1 user context).")
+    void clientCanSeeOnlyHisEvaluations() {
+        //2 clients from same user
         Long id1 = getClientId(client);
-        Long id2 = getClientId(client2);
-        String name1 = client.getString("name");
-        String name2 = client2.getString("name");
+        Long id2 = getClientId(clientOperations.createAndReturnRandomNameClient());
 
+        //2 evl for 1 client
         JsonPath evaluationFirstClient1 = evaluationOperations.createEvaluationWithDescription(id1);
         JsonPath evaluationFirstClient2 = evaluationOperations.createEvaluationWithDescription(id1);
+        //1 evaluation for client 2
         JsonPath evaluationSecondClient1 = evaluationOperations.createEvaluationWithDescription(id2);
 
         long evaluationId1 = evaluationFirstClient1.getLong("evaluation.id");
@@ -149,7 +151,9 @@ public class DataAccessTest {
         JsonPath secondClientEvaluationJson = evaluationOperations.getAllEvaluationsByClientId(id2);
 
         List<Object> list1 = firstClientEvaluationJson.getList("evaluationsList");
+        log.info(list1.toString());
         List<Object> list2 = secondClientEvaluationJson.getList("evaluationsList");
+        log.info(list2.toString());
 
         assertThat(list1.get(0).toString(), containsString("id=" + evaluationId1));
         assertThat(list1.get(1).toString(), containsString("id=" + evaluationId2));
@@ -157,6 +161,52 @@ public class DataAccessTest {
 
         assertThat(firstClientEvaluationJson.getList("evaluationsList").size(), equalTo(2));
         assertThat(secondClientEvaluationJson.getList("evaluationsList").size(), equalTo(1));
+
+        assertThat(list1.get(0).toString(), not(containsString("id=" + evaluationId3)));
+        assertThat(list1.get(1).toString(), not(containsString("id=" + evaluationId3)));
+        assertThat(list2.get(0).toString(), not(containsString("id=" + evaluationId1)));
+        assertThat(list2.get(0).toString(), not(containsString("id=" + evaluationId2)));
+    }
+
+
+    @Test
+    @DisplayName("User cannot see evaluations of other user clients (in 2 users context).")
+    void userCanSeeOnlyHisEvaluations() {
+        Long id1 = getClientId(client);
+        Long id2 = getClientId(client2);
+
+        //2 evaluace pro clienta 1 usera 1
+        JsonPath evaluationFirstClient1 = evaluationOperations.createEvaluationWithDescription(id1);
+        JsonPath evaluationFirstClient2 = evaluationOperations.createEvaluationWithDescription(id1);
+        //1 evaluace pro client 1 usera2
+        JsonPath evaluationSecondClient1 = evaluationOperations.createEvaluationWithDescriptionForSecondUsersClient(id2);
+
+        //evaluations IDs
+        long evaluationId1 = evaluationFirstClient1.getLong("evaluation.id");
+        long evaluationId2 = evaluationFirstClient2.getLong("evaluation.id");
+        long evaluationId3 = evaluationSecondClient1.getLong("evaluation.id");
+
+        //other users clients evaluations
+        JsonPath firstClientSecondUserJson = evaluationOperations.getAllEvaluationsByClientId(id1, USER2_ID, TOKEN2);
+        JsonPath secondClientFirstUserJson = evaluationOperations.getAllEvaluationsByClientId(id2, USER_ID, TOKEN);
+        //owned clients evaluations
+        JsonPath firstClientFirstUserJson = evaluationOperations.getAllEvaluationsByClientId(id1, USER_ID, TOKEN);
+        JsonPath secondClienSecondUserJson = evaluationOperations.getAllEvaluationsByClientId(id2, USER2_ID, TOKEN2);
+
+        List<Object> list1 = firstClientFirstUserJson.getList("evaluationsList");
+        log.info(list1.toString());
+        List<Object> list2 = secondClienSecondUserJson.getList("evaluationsList");
+        log.info(list2.toString());
+
+        assertThat(firstClientSecondUserJson.getString("message"), equalTo(UNAUTHORIZED_ACCESS.getMessage()));
+        assertThat(secondClientFirstUserJson.getString("message"), equalTo(UNAUTHORIZED_ACCESS.getMessage()));
+
+        assertThat(list1.get(0).toString(), containsString("id=" + evaluationId1));
+        assertThat(list1.get(1).toString(), containsString("id=" + evaluationId2));
+        assertThat(list2.get(0).toString(), containsString("id=" + evaluationId3));
+
+        assertThat(firstClientFirstUserJson.getList("evaluationsList").size(), equalTo(2));
+        assertThat(secondClienSecondUserJson.getList("evaluationsList").size(), equalTo(1));
 
         assertThat(list1.get(0).toString(), not(containsString("id=" + evaluationId3)));
         assertThat(list1.get(1).toString(), not(containsString("id=" + evaluationId3)));
@@ -195,6 +245,4 @@ public class DataAccessTest {
         log.info(list.stream().map(Board::getId).collect(Collectors.toList()).toString());
         log.info(list2.stream().map(Board::getId).collect(Collectors.toList()).toString());
     }
-
-
 }

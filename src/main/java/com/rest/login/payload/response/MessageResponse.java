@@ -9,8 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
-import static com.rest.login.enums.EResponses.LISTING_ALL_CLIENTS;
-import static com.rest.login.enums.EResponses.LISTING_ALL_USERS;
+import static com.rest.login.enums.EResponses.*;
 
 //TODO:1 Změnit pomocí JsonProperty jména (hlavně DTO...) + potom opravit v testech.
 //TODO:2 Možná přesunout konstruktory do samotné factory.
@@ -60,8 +59,8 @@ public class MessageResponse {
         return messageResponse;
     }
 
-    public static MessageResponse createMessageResponseWithEvaluationDTOs(String message, List<EvaluationDTO> evaluationsList) {
-        MessageResponse messageResponse = new MessageResponse(message);
+    public static MessageResponse createMessageResponseWithEvaluationDTOs(List<EvaluationDTO> evaluationsList) {
+        MessageResponse messageResponse = new MessageResponse(LISTING_EVALUATIONS.getMessage());
         messageResponse.setEvaluationsList(evaluationsList);
         return messageResponse;
     }

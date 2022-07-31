@@ -43,12 +43,12 @@ public class ClientController {
         return ResponseEntity.ok().body(createMessageResponseWithClientDTOsList(clientService.getAllClientsDTO()));
     }
 
-    @GetMapping("/clients/{id}")
+    @GetMapping("/admin/users/{userId}/clients/{id}")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<MessageResponse> retrieveAnyClientById(@PathVariable Long id) {
+    public ResponseEntity<MessageResponse> retrieveAnyClientById(@PathVariable Long id, @PathVariable Long userId) {
         Client client;
         try {
-            client = clientService.getClientById(id);
+            client = clientService.getClientById(id, userId);
         } catch (EntityNotFoundException | NoSuchElementException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
         }
@@ -110,7 +110,7 @@ public class ClientController {
     public ResponseEntity<MessageResponse> editClient(@PathVariable Long userId, @PathVariable Long clientId, @Valid @RequestBody AddClientRequest addClientRequest) {
         Client client;
         try {
-            client = clientService.getClientById(clientId);
+            client = clientService.getClientById(clientId, userId);
         } catch (EntityNotFoundException | NoSuchElementException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
         } catch (IllegalArgumentException | InvalidDataAccessApiUsageException e) {

@@ -14,6 +14,7 @@ import com.rest.login.security.jwt.exception.TokenRefreshException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -35,7 +36,7 @@ public class ClientService {
     @Autowired
     private UserRepository userRepository;
 
-    private Client createClientDependingOnPayload(AddClientRequest addClientRequest, User user) throws UnsupportedOperationException{
+    private Client createClientDependingOnPayload(AddClientRequest addClientRequest, User user) throws UnsupportedOperationException {
         if (addClientRequest.getName() == null) {
             throw new UnsupportedOperationException(MISSING_NAME_IN_BODY.getMessage());
         }
@@ -80,8 +81,13 @@ public class ClientService {
                 .orElseThrow(() -> new NoSuchElementException(CLIENT_NOT_FOUND.getMessage()));
     }
 
-    public Client getClientById(Long clientId) {
-        return clientRepository.findById(clientId).get();
+    public Client getClientById(Long clientId, Long userId) throws AccessDeniedException {
+        Client client = clientRepository.findById(clientId).get();
+        if (client.getUser().getId().equals(userId)) {
+            return client;
+        } else {
+            throw new AccessDeniedException(UNAUTHORIZED_ACCESS.getMessage());
+        }
     }
 
     public ClientDTO editAndSaveClient(Client client, AddClientRequest addClientRequest) {

@@ -288,6 +288,6 @@ public class ClientTest {
     public void nullProvidedToFindClient() {
         Exception exception = assertThrows(
                 InvalidDataAccessApiUsageException.class,
-                () -> clientService.getClientById(null));
+                () -> clientService.getClientById(null, Long.valueOf(USER_ID)));
     }
 }

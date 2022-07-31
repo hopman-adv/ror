@@ -9,6 +9,7 @@ import com.rest.login.operations.UserOperations;
 import com.rest.login.repository.BoardRepository;
 import groovy.util.logging.Slf4j;
 import io.restassured.path.json.JsonPath;
+import org.codehaus.groovy.transform.SourceURIASTTransformation;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.rest.login.TestUtils.getClientId;
+import static com.rest.login.enums.EResponses.NO_EVALUATIONS_FOR_CLIENT;
 import static com.rest.login.tests.UserSignupTest.USER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -157,5 +159,10 @@ public class EvaluationTest {
         log.info(list2.stream().map(Board::getId).collect(Collectors.toList()).toString());
     }
 
-
+    @Test
+    void noEvaluationsReturned() {
+        JsonPath json = evaluationOperations.getAllEvaluationsByClientId(getClientId(client));
+        System.out.println(json.prettify());
+        assertThat(json.getString("message"), equalTo(NO_EVALUATIONS_FOR_CLIENT.getMessage()));
+    }
 }

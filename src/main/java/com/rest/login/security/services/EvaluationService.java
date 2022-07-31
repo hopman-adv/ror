@@ -8,6 +8,7 @@ import com.rest.login.repository.EvaluationRepository;
 import com.sun.xml.bind.v2.TODO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -30,7 +31,7 @@ public class EvaluationService {
     public List<EvaluationDTO> getAllEvaluationsDTO() {
         return evaluationRepository.findAll()
                 .stream()
-                .map(EvaluationDTO::new)
+                .map(this::evaluationToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -95,34 +96,28 @@ public class EvaluationService {
         });
     }
 
-    public ResponseEntity<MessageResponse> createEvaluation(Long clientId, AddEvaluationRequest addEvaluationRequest) {
-        Client client;
-        try {
-            client = clientService.getClientById(clientId);
-        } catch (EntityNotFoundException | NoSuchElementException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
-        }
-        //TODO: přesunout rozhodování ohledně tvorby evaluation do evaluationService (kod níže)
+    public Evaluation createEvaluation(Client client, Long userId, AddEvaluationRequest addEvaluationRequest) {
         Evaluation evaluation;
         if (addEvaluationRequest == null) {
             evaluation = createBasicEvaluation(client);
         } else {
             evaluation = createBasicEvaluationWithDescription(client, addEvaluationRequest);
         }
-        return ResponseEntity.ok().body(new MessageResponse(EVALUATION_ADDED.getMessage(), new EvaluationDTO(evaluation)));
+        return evaluation;
     }
 
-    public ResponseEntity<MessageResponse> getAllClientsEvaluations(Client client) {
-        //TODO: Doplnit přístup jen pro klienty daného usera. Přidat userID a pracovat s ním.
-        if (client == null) {
-            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
-        }
-        Long dbClientId = client.getId();
-        List<EvaluationDTO> evaluations = getAllClientEvaluations(dbClientId);
+    public List<EvaluationDTO> getAllClientsEvaluationDTOs(Client client) {
+        return getAllEvaluationsDTO().stream()
+                .filter(evaluationDTO -> Objects.equals(evaluationDTO.getClientId(), client.getId()))
+                .collect(Collectors.toList());
 
-        if (evaluations.isEmpty()) {
-            return ResponseEntity.ok(new MessageResponse(NO_EVALUATIONS_FOR_CLIENT.getMessage()));
-        }
-        return ResponseEntity.ok().body(createMessageResponseWithEvaluationDTOs(LISTING_EVALUATIONS.getMessage(), evaluations));
+    }
+
+    private EvaluationDTO evaluationToDTO(Evaluation evaluation) {
+        return new EvaluationDTO(evaluation);
+    }
+
+    public EvaluationDTO getEvaluationById(Long id) {
+        return evaluationToDTO(evaluationRepository.getById(id));
     }
 }

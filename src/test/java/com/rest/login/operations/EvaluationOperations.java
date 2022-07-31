@@ -13,8 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import static com.rest.login.data.UserSession.TOKEN;
-import static com.rest.login.data.UserSession.USER_ID;
+import static com.rest.login.data.UserSession.*;
 import static com.rest.login.payload.request.AddClientRequest.*;
 import static com.rest.login.payload.request.AddEvaluationRequest.createEvaluationRequest;
 import static io.restassured.RestAssured.given;
@@ -33,27 +32,38 @@ public class EvaluationOperations {
 
     Logger log = LoggerFactory.getLogger(EvaluationOperations.class);
 
-    private JsonPath addEvaluation(AddEvaluationRequest addEvaluationRequest, Long clientId) {
+    private JsonPath addEvaluation(AddEvaluationRequest addEvaluationRequest, Long clientId, String userId, String token) {
 
         if (addEvaluationRequest != null) {
-            return given().header("Authorization", "Bearer " + TOKEN)
+            return given().header("Authorization", "Bearer " + token)
                     .relaxedHTTPSValidation()
                     .contentType(ContentType.JSON)
                     .body(addEvaluationRequest)
                     .when().
-                    post("https://localhost:8443/api/data/users/{id}/clients/{clientId}/evaluations", USER_ID, clientId)
+                    post("https://localhost:8443/api/data/users/{id}/clients/{clientId}/evaluations", userId, clientId)
                     .jsonPath();
-        }else{
-            return given().header("Authorization", "Bearer " + TOKEN)
+        } else {
+            return given().header("Authorization", "Bearer " + token)
                     .relaxedHTTPSValidation()
                     .when().
-                    post("https://localhost:8443/api/data/users/{id}/clients/{clientId}/evaluations", USER_ID, clientId)
+                    post("https://localhost:8443/api/data/users/{id}/clients/{clientId}/evaluations", userId, clientId)
                     .jsonPath();
         }
     }
 
+    public JsonPath getAllEvaluationsByClientId(Long clientId, String id, String token) {
+        String url = "https://localhost:8443/api/data/users/" + id + "/clients/" + clientId + "/evaluations";
+        log.info(url);
+        return given().header("Authorization", "Bearer " + token)
+                .relaxedHTTPSValidation()
+                .contentType(ContentType.JSON)
+                .when().
+                get(url)
+                .jsonPath();
+    }
+
     public JsonPath getAllEvaluationsByClientId(Long clientId) {
-        String url = "https://localhost:8443/api/data/users/"+USER_ID+"/clients/"+clientId+"/evaluations";
+        String url = "https://localhost:8443/api/data/users/" + USER_ID + "/clients/" + clientId + "/evaluations";
         log.info(url);
         return given().header("Authorization", "Bearer " + TOKEN)
                 .relaxedHTTPSValidation()
@@ -63,12 +73,17 @@ public class EvaluationOperations {
                 .jsonPath();
     }
 
+
     public JsonPath createEvaluationWithDescription(Long clientId) {
-        return addEvaluation(createEvaluationRequest(DESCRIPTION), clientId);
+        return addEvaluation(createEvaluationRequest(DESCRIPTION), clientId, USER_ID, TOKEN);
+    }
+
+    public JsonPath createEvaluationWithDescriptionForSecondUsersClient(Long clientId) {
+        return addEvaluation(createEvaluationRequest(DESCRIPTION), clientId, USER2_ID, TOKEN2);
     }
 
     public JsonPath createEvaluationWithoutDescription(Long clientId) {
-        return addEvaluation(null, clientId);
+        return addEvaluation(null, clientId, USER_ID, TOKEN);
     }
 
     public void createMoreEvaluationsAtOnce(Integer count, Long clientId) {

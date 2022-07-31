@@ -13,9 +13,10 @@ public enum EResponses {
     CLIENT_NOT_FOUND("Error: Client not found in database!"),
     CLIENTS_NOT_FOUND("No clients found."),
     LISTING_ALL_CLIENTS("All clients from database."),
-    EVALUATION_NOT_FOUND("Error: Evaluation not found!"),
+    EVALUATION_NOT_FOUND("Evaluation not found!"),
+    EVALUATION_FOUND("Evaluation found."),
     EVALUATION_ADDED("Evaluation added."),
-    NO_EVALUATIONS_FOR_CLIENT("Error: Client does not have any evaluations created!"),
+    NO_EVALUATIONS_FOR_CLIENT("Client does not have any evaluations created!"),
     LISTING_EVALUATIONS("Listing client's evaluations!"),
     USERNAME_TAKEN("Error: Username is already taken!"),
     EMAIL_ALREADY_USED("Error: Email is already in use!"),
@@ -27,7 +28,8 @@ public enum EResponses {
     LISTING_ANSWERS_FROM_BOARD("Listing all answers from board!"),
     MISSING_NAME_IN_BODY("Error: Missing name in body!"),
     VALIDATION_FAILED("Validation failed for request body."),
-    ID_NULL("Provided ID is null.");
+    ID_NULL("Provided ID is null."),
+    UNAUTHORIZED_ACCESS("Unauthorized access to resource.");
 
 
     private final String message;
