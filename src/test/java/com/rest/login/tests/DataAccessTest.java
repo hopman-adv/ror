@@ -94,8 +94,8 @@ public class DataAccessTest {
 
         assertThat(getClientParameter(json1, "name"), equalTo(name1));
         assertThat(getClientParameter(json2, "name"), equalTo(name2));
-        assertThat(json3.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
-        assertThat(json4.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
+        assertThat(json3.getString("message"), equalTo(UNAUTHORIZED_ACCESS.getMessage()));
+        assertThat(json4.getString("message"), equalTo(UNAUTHORIZED_ACCESS.getMessage()));
         //Getting all clients
         JsonPath jsonAll1 = clientOperations.getAllUsersClientsFirstUser();
         JsonPath jsonAll2 = clientOperations.getAllUsersClientsSecondUser();
@@ -123,12 +123,23 @@ public class DataAccessTest {
 
         //First user deletes other user's client by ID.
         JsonPath json = clientOperations.deleteClientById(id2);
-        assertThat(json.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
+        assertThat(json.getString("message"), equalTo(UNAUTHORIZED_ACCESS.getMessage()));
 
         //First user deletes his own client by ID.
         json = clientOperations.deleteClientById(id1);
         assertThat(json.getString("message"), equalTo(CLIENT_DELETED.getMessage()));
     }
+
+    @Test
+    public void userCannotDeleteNonExistingClient() {
+        Long id1 = getClientId(client);
+        Long id2 = getClientId(client2);
+
+        //First user deletes other user's client by ID.
+        JsonPath json = clientOperations.deleteClientById(-1L);
+        assertThat(json.getString("message"), equalTo(CLIENT_NOT_FOUND.getMessage()));
+    }
+
 
     @Test
     @DisplayName("Client s endpoint returns only his evaluations (in 1 user context).")

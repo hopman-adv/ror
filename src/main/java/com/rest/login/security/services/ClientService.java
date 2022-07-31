@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -81,8 +82,9 @@ public class ClientService {
                 .orElseThrow(() -> new NoSuchElementException(CLIENT_NOT_FOUND.getMessage()));
     }
 
-    public Client getClientById(Long clientId, Long userId) throws AccessDeniedException {
-        Client client = clientRepository.findById(clientId).get();
+    public Client getClientById(Long clientId, Long userId) throws AccessDeniedException, NoSuchElementException {
+        Client client = clientRepository.findById(clientId).orElseThrow(
+                () -> new NoSuchElementException(CLIENT_NOT_FOUND.getMessage()));
         if (client.getUser().getId().equals(userId)) {
             return client;
         } else {

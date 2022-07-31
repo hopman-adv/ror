@@ -59,18 +59,10 @@ public class EvaluationController {
         return ResponseEntity.ok().body(new MessageResponse(EVALUATION_FOUND.getMessage(), evaluationService.getEvaluationById(id)));
     }
 
-    //Zde jsme
     @GetMapping("/users/{userId}/clients/{clientId}/evaluations")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
     public ResponseEntity<MessageResponse> retrieveAllEvaluationsByClientId(@PathVariable Long userId, @PathVariable Long clientId) {
-        Client client;
-        try {
-            client = clientService.getClientById(clientId, userId);
-        } catch (EntityNotFoundException | NoSuchElementException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
-        } catch (AccessDeniedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new MessageResponse(UNAUTHORIZED_ACCESS.getMessage()));
-        }
+        Client client = clientService.getClientById(clientId, userId);
         List<EvaluationDTO> evaluations = evaluationService.getAllClientsEvaluationDTOs(client);
         if (evaluations.isEmpty()) {
             return ResponseEntity.ok(new MessageResponse(NO_EVALUATIONS_FOR_CLIENT.getMessage()));
@@ -78,23 +70,17 @@ public class EvaluationController {
         return ResponseEntity.ok().body(createMessageResponseWithEvaluationDTOs(evaluations));
     }
 
+    //    zde jsem
     @GetMapping("/users/{userId}/clients/{clientId}/evaluations/{evalId}")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
-    public EvaluationDTO retrieveEvaluationByClientId(@PathVariable Long userId, @PathVariable Long clientId, @PathVariable Long evalId) {
-        return evaluationService.getEvaluationDTOByClientIdAndEvalId(clientId, evalId);
+    public ResponseEntity<MessageResponse> retrieveEvaluationByClientId(@PathVariable Long userId, @PathVariable Long clientId, @PathVariable Long evalId) {
+        return null;//evaluationService.getEvaluationDTOByClientIdAndEvalId(clientId, evalId);
     }
 
     @PostMapping(path = "/users/{id}/clients/{clientId}/evaluations", consumes = "application/json")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
     public ResponseEntity<MessageResponse> createEvaluation(@Valid @RequestBody AddEvaluationRequest addEvaluationRequest, @PathVariable Long id, @PathVariable Long clientId) {
-        Client client;
-        try {
-            client = clientService.getClientById(clientId, id);
-        } catch (EntityNotFoundException | NoSuchElementException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
-        } catch (AccessDeniedException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse(UNAUTHORIZED_ACCESS.getMessage()));
-        }
+        Client client = clientService.getClientById(clientId, id);
 
         EvaluationDTO evaluationDTO = new EvaluationDTO(evaluationService.createEvaluation(client, id, addEvaluationRequest));
         return ResponseEntity.ok(new MessageResponse(EVALUATION_ADDED.getMessage(), evaluationDTO));
@@ -103,14 +89,7 @@ public class EvaluationController {
     @PostMapping(path = "/users/{id}/clients/{clientId}/evaluations")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#id)")
     public ResponseEntity<MessageResponse> createEvaluation(@PathVariable Long id, @PathVariable Long clientId) {
-        Client client;
-        try {
-            client = clientService.getClientById(clientId, id);
-        } catch (EntityNotFoundException | NoSuchElementException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_NOT_FOUND.getMessage()));
-        } catch (AccessDeniedException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse(UNAUTHORIZED_ACCESS.getMessage()));
-        }
+        Client client = clientService.getClientById(clientId, id);
 
         EvaluationDTO evaluationDTO = new EvaluationDTO(evaluationService.createEvaluation(client, id, null));
         return ResponseEntity.ok(new MessageResponse(EVALUATION_ADDED.getMessage(), evaluationDTO));
