@@ -84,6 +84,28 @@ public class EvaluationOperations {
                 .jsonPath();
     }
 
+    public JsonPath editEvaluationByClientIdAndEvaluationId(Long clientId, Long evalId, AddEvaluationRequest addEvaluationRequest) {
+        String url = "https://localhost:8443/api/data/users/" + USER_ID + "/clients/" + clientId + "/evaluations/" + evalId;
+        log.info(url);
+        return given().header("Authorization", "Bearer " + TOKEN)
+                .relaxedHTTPSValidation()
+                .contentType(ContentType.JSON)
+                .body(addEvaluationRequest)
+                .when().
+                put(url)
+                .jsonPath();
+    }
+
+    public JsonPath deleteEvaluationByClientIdAndEvaluationId(Long clientId, Long evalId) {
+        String url = "https://localhost:8443/api/data/users/" + USER_ID + "/clients/" + clientId + "/evaluations/" + evalId;
+        log.info(url);
+        return given().header("Authorization", "Bearer " + TOKEN)
+                .relaxedHTTPSValidation()
+                .contentType(ContentType.JSON)
+                .when().
+                delete(url)
+                .jsonPath();
+    }
 
     public JsonPath createEvaluationWithDescription(Long clientId) {
         return addEvaluation(createEvaluationRequest(DESCRIPTION), clientId, USER_ID, TOKEN);

@@ -83,7 +83,8 @@ public class ClientService {
     }
 
     public Client getClientById(Long clientId, Long userId) throws AccessDeniedException, NoSuchElementException {
-        Client client = clientRepository.findById(clientId).orElseThrow(
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(
                 () -> new NoSuchElementException(CLIENT_NOT_FOUND.getMessage()));
         if (client.getUser().getId().equals(userId)) {
             return client;

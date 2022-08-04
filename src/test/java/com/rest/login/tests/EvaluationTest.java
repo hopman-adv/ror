@@ -6,6 +6,7 @@ import com.rest.login.models.Board;
 import com.rest.login.operations.ClientOperations;
 import com.rest.login.operations.EvaluationOperations;
 import com.rest.login.operations.UserOperations;
+import com.rest.login.payload.request.AddEvaluationRequest;
 import com.rest.login.repository.BoardRepository;
 import groovy.util.logging.Slf4j;
 import io.restassured.path.json.JsonPath;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 
 import static com.rest.login.TestUtils.getClientId;
 import static com.rest.login.enums.EResponses.*;
+import static com.rest.login.payload.request.AddEvaluationRequest.createEvaluationRequest;
 import static com.rest.login.tests.UserSignupTest.USER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -36,6 +38,7 @@ public class EvaluationTest {
     static String AUTH_URL = "https://localhost:8443/api/auth/";
     static String BASE_URL = "https://localhost:8443/api/data/";
     static String NON_EXISTING_CLIENT_MESSAGE = "Error: Client not found in database!";
+    private String NEW_DESCRIPTION = "New description after updating.";
 
     @Autowired
     private UserSession userSession;
@@ -61,6 +64,7 @@ public class EvaluationTest {
     void createUser() {
         userOperations.createAndLoginTesterUser(AUTH_URL);
         client = clientOperations.createAndReturnRandomNameClient();
+        client2 = clientOperations.createAndReturnRandomNameClient();
     }
 
     @AfterEach
@@ -72,6 +76,7 @@ public class EvaluationTest {
     void createEvaluationWithDescription() {
         JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(getClientId(client));
 
+        assertThat(evaluation.getString("message"), equalTo(EVALUATION_ADDED.getMessage()));
         assertThat(evaluation.getString("evaluation.status"), equalTo("NEW"));
         assertThat(evaluation.getString("evaluation.description"), equalTo(DESCRIPTION));
         assertThat(evaluation.getString("evaluation.result"), equalTo(null));
@@ -81,7 +86,8 @@ public class EvaluationTest {
     void createEvaluationWithoutDescription() {
         log.info(client.prettify());
         JsonPath evaluation = evaluationOperations.createEvaluationWithoutDescription(getClientId(client));
-        log.info(evaluation.prettify());
+
+        assertThat(evaluation.getString("message"), equalTo(EVALUATION_ADDED.getMessage()));
         assertThat(evaluation.getString("evaluation.status"), equalTo("NEW"));
         assertThat(evaluation.getString("evaluation.description"), equalTo(null));
         assertThat(evaluation.getString("evaluation.result"), equalTo(null));
@@ -130,7 +136,7 @@ public class EvaluationTest {
 
     @Test
     void addingToNonexistingClient() {
-        Long NON_EXISTING_CLIENT_ID = getClientId(client) + 1;
+        Long NON_EXISTING_CLIENT_ID = getClientId(client) + 1000;
         JsonPath json = evaluationOperations.createEvaluationWithoutDescription(NON_EXISTING_CLIENT_ID);
         log.info(json.prettify());
         assertThat(json.getString("message"), equalTo(NON_EXISTING_CLIENT_MESSAGE));
@@ -181,5 +187,56 @@ public class EvaluationTest {
         System.out.println(evaluation.prettify());
         System.out.println(json.prettify());
         assertThat(json.getString("message"), equalTo(EVALUATION_FOUND.getMessage()));
+    }
+
+    @Test
+    void editEvaluationWithDescription() {
+        Long clientId = getClientId(client);
+        JsonPath evaluation = evaluationOperations.createEvaluationWithoutDescription(clientId);
+        Long evalId = evaluation.getLong("evaluation.id");
+        assertThat(evaluation.getString("evaluation.description"), equalTo(null));
+
+        JsonPath response = evaluationOperations.editEvaluationByClientIdAndEvaluationId(clientId, evalId, createEvaluationRequest(NEW_DESCRIPTION));
+
+        assertThat(response.getString("message"), equalTo(EVALUATION_UPDATED.getMessage()));
+        assertThat(response.getLong("evaluation.id"), equalTo(evalId));
+        assertThat(response.getString("evaluation.description"), equalTo(NEW_DESCRIPTION));
+    }
+
+    @Test
+    void editEvaluationWithoutDescription() {
+        Long clientId = getClientId(client);
+        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(clientId);
+        Long evalId = evaluation.getLong("evaluation.id");
+        assertThat(evaluation.getString("evaluation.description"), equalTo(DESCRIPTION));
+
+        JsonPath response = evaluationOperations.editEvaluationByClientIdAndEvaluationId(clientId, evalId, createEvaluationRequest(NEW_DESCRIPTION));
+
+        assertThat(response.getString("message"), equalTo(EVALUATION_UPDATED.getMessage()));
+        assertThat(response.getLong("evaluation.id"), equalTo(evalId));
+        assertThat(response.getString("evaluation.description"), equalTo(NEW_DESCRIPTION));
+    }
+
+    @Test
+    void editEvaluationWithWrongClientId() {
+        Long clientId = getClientId(client);
+        Long client2Id = getClientId(client2);
+        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(clientId);
+        Long evalId = evaluation.getLong("evaluation.id");
+
+        JsonPath response = evaluationOperations.editEvaluationByClientIdAndEvaluationId(client2Id, evalId, createEvaluationRequest(NEW_DESCRIPTION));
+
+        assertThat(response.getString("message"), equalTo(WRONG_CLIENT_NUMBER.getMessage()));
+    }
+
+    @Test
+    void deleteEvaluation() {
+        Long clientId = getClientId(client);
+        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(clientId);
+        Long evalId = evaluation.getLong("evaluation.id");
+
+        JsonPath response = evaluationOperations.deleteEvaluationByClientIdAndEvaluationId(clientId, evalId);
+
+        assertThat(response.getString("message"), equalTo(EVALUATION_DELETED.getMessage()));
     }
 }

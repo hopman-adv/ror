@@ -3,6 +3,7 @@ package com.rest.login.tests;
 import com.rest.login.data.UserSession;
 import com.rest.login.dto.ClientDTO;
 import com.rest.login.operations.ClientOperations;
+import com.rest.login.operations.EvaluationOperations;
 import com.rest.login.operations.UserOperations;
 
 import static com.rest.login.TestUtils.*;
@@ -54,6 +55,9 @@ public class ClientTest {
     @Autowired
     private ClientService clientService;
 
+    @Autowired
+    private EvaluationOperations evaluationOperations;
+
     Logger log = LoggerFactory.getLogger(ClientTest.class);
 
     @BeforeEach
@@ -63,7 +67,7 @@ public class ClientTest {
 
     @AfterEach
     void cleanupUsers() {
-        userOperations.deleteUserByUsername(USER_NAME);
+        userOperations.deleteAll();
     }
 
     @Test
@@ -199,6 +203,7 @@ public class ClientTest {
     void deleteClient() {
         JsonPath client = clientOperations.createAndReturnRandomNameEmailDescriptionClient();
         log.info(client.prettify());
+        JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(getClientId(client));
 
         JsonPath response = clientOperations.deleteClientById(getClientId(client));
         log.info(response.prettify());

@@ -166,7 +166,9 @@ public class ClientOperations {
     }
 
     public JsonPath createAndReturnRandomNameEmailDescriptionClient() {
-        return addClient(createFullRequest(fake.getName(), fake.getEmailAddress(), fake.getRandomText(100)));
+        String fakeEmail = fake.getEmailAddress();
+        log.info(fakeEmail);
+        return addClient(createFullRequest(fake.getName(), fakeEmail, fake.getRandomText(100)));
     }
 
     public JsonPath createAndReturnMissingNameClient() {

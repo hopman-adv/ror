@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.rest.login.payload.response.ErrorResponse;
 import com.rest.login.payload.response.MessageResponse;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -71,8 +72,13 @@ public class CustomExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseBody
     public ResponseEntity<MessageResponse> exception(NoSuchElementException e) {
-        String message = e.getMessage();
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(message));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    @ResponseBody
+    public ResponseEntity<MessageResponse> exception(DataAccessException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse(e.getMessage()));
     }
 
 }

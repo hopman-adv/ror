@@ -16,9 +16,7 @@ public class Answer {
     @Column(name = "answer_text")
     private String answer_text;
 
-    //@NotEmpty
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "board_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Board board;
 
     public Answer() {

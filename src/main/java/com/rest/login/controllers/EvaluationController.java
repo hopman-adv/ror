@@ -1,9 +1,7 @@
 package com.rest.login.controllers;
 
 import com.rest.login.dto.EvaluationDTO;
-import com.rest.login.models.Board;
 import com.rest.login.models.Client;
-import com.rest.login.models.Evaluation;
 import com.rest.login.payload.request.AddEvaluationRequest;
 import com.rest.login.payload.response.MessageResponse;
 import com.rest.login.repository.ClientRepository;
@@ -12,17 +10,12 @@ import com.rest.login.repository.UserRepository;
 import com.rest.login.security.services.ClientService;
 import com.rest.login.security.services.EvaluationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static com.rest.login.enums.EResponses.*;
 import static com.rest.login.payload.response.MessageResponse.createMessageResponseWithEvaluationDTOs;
@@ -95,5 +88,26 @@ public class EvaluationController {
 
         EvaluationDTO evaluationDTO = new EvaluationDTO(evaluationService.createEvaluation(client, id, null));
         return ResponseEntity.ok(new MessageResponse(EVALUATION_ADDED.getMessage(), evaluationDTO));
+    }
+
+    @PutMapping("/users/{userId}/clients/{clientId}/evaluations/{evalId}")
+    @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
+    public ResponseEntity<MessageResponse> updateEvaluation(
+            @PathVariable Long userId, @PathVariable Long clientId, @PathVariable Long evalId, @Valid @RequestBody AddEvaluationRequest addEvaluationRequest) {
+        Client client = clientService.getClientById(clientId, userId);
+
+        EvaluationDTO evaluationDTO = evaluationService.editEvaluation(client, evalId, addEvaluationRequest);
+        return ResponseEntity.ok(new MessageResponse(EVALUATION_UPDATED.getMessage(), evaluationDTO));
+
+    }
+
+    @DeleteMapping("/users/{userId}/clients/{clientId}/evaluations/{evalId}")
+    @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
+    public ResponseEntity<MessageResponse> deleteEvaluation(
+            @PathVariable Long userId, @PathVariable Long clientId, @PathVariable Long evalId) {
+        Client client = clientService.getClientById(clientId, userId);
+        evaluationService.deleteEvaluation(client, evalId);
+
+        return ResponseEntity.ok(new MessageResponse(EVALUATION_DELETED.getMessage()));
     }
 }

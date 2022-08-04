@@ -6,7 +6,10 @@ import com.rest.login.payload.request.AddEvaluationRequest;
 import com.rest.login.payload.response.MessageResponse;
 import com.rest.login.repository.EvaluationRepository;
 import com.sun.xml.bind.v2.TODO;
+import javafx.scene.web.WebView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -120,4 +123,29 @@ public class EvaluationService {
     public EvaluationDTO getEvaluationById(Long id) {
         return evaluationToDTO(evaluationRepository.getById(id));
     }
+
+    public EvaluationDTO editEvaluation(Client client, Long evalId, AddEvaluationRequest addEvaluationRequest)
+            throws DataAccessResourceFailureException{
+        Evaluation evaluation = evaluationRepository.getById(evalId);
+
+        if(!Objects.equals(evaluation.getClient().getId(), client.getId())){
+            throw new DataAccessResourceFailureException(WRONG_CLIENT_NUMBER.getMessage());
+        }
+        evaluation.setDescription_info(addEvaluationRequest.getDescription());
+        Evaluation savedEvaluation = evaluationRepository.save(evaluation);
+
+        return evaluationToDTO(savedEvaluation);
+    }
+
+    public void deleteEvaluation(Client client, Long evalId)
+            throws DataAccessResourceFailureException{
+        Evaluation evaluation = evaluationRepository.getById(evalId);
+
+        if(!Objects.equals(evaluation.getClient().getId(), client.getId())){
+            throw new DataAccessResourceFailureException(WRONG_CLIENT_NUMBER.getMessage());
+        }
+        evaluationRepository.deleteById(evaluation.getId());
+
+    }
+
 }

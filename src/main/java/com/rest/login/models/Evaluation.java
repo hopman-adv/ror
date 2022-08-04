@@ -22,11 +22,12 @@ public class Evaluation {
     @Size(max = 1500)
     private String result;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "client_id")
+    @ManyToOne(fetch = FetchType.LAZY)
     private Client client;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "id", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "evaluation",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<Board> boards;
 
     public Evaluation() {
@@ -40,7 +41,9 @@ public class Evaluation {
         this.id = id;
     }
 
-    public EStatus getEvaluationStatus() { return evaluation_status; }
+    public EStatus getEvaluationStatus() {
+        return evaluation_status;
+    }
 
     public void setEvaluationStatus(EStatus evaluation_status) {
         this.evaluation_status = evaluation_status;

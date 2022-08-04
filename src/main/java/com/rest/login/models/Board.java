@@ -20,11 +20,10 @@ public class Board {
     @Size(max = 1500)
     private String comments;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "evaluation_id")
+    @ManyToOne(fetch = FetchType.LAZY)
     private Evaluation evaluation;
 
-    @OneToMany(mappedBy = "id", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Answer> answers;
 
     public List<Answer> getAnswers() {
@@ -35,9 +34,12 @@ public class Board {
         this.answers = answers;
     }
 
-    public Board() { }
+    public Board() {
+    }
 
-    public Board(Evaluation evaluation) { this.evaluation = evaluation; }
+    public Board(Evaluation evaluation) {
+        this.evaluation = evaluation;
+    }
 
     public Long getId() {
         return id;
