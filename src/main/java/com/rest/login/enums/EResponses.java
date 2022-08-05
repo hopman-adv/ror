@@ -27,6 +27,8 @@ public enum EResponses {
     ADMIN_ROLE_NOT_REGISTREABLE("Error: Registering admin role is forbidden."),
     LOGOUT_SUCCESSFUL("Log out successful!"),
     BOARD_NOT_FOUND("Board was not found."),
+    LISTING_ALL_BOARDS("All boards rom evaluation."),
+    ANSWER_NOT_FOUND("Answer was not found."),
     CLIENT_OWNED_BY_DIFFERENT_USER("Unauthorized access - client owned by different user!"),
     LISTING_ANSWERS_FROM_BOARD("Listing all answers from board!"),
     MISSING_NAME_IN_BODY("Error: Missing name in body!"),

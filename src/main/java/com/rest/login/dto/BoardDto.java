@@ -1,5 +1,6 @@
 package com.rest.login.dto;
 
+import com.rest.login.models.Board;
 import com.rest.login.models.EBoardStatus;
 
 import javax.validation.constraints.Size;
@@ -19,6 +20,14 @@ public class BoardDto implements Serializable {
         this.comments = comments;
         this.evaluationId = evaluationId;
     }
+
+    public BoardDto(Board board) {
+        this.id = board.getId();
+        this.board_status = board.getBoard_status();
+        this.comments = board.getComments();
+        this.evaluationId = board.getEvaluation().getId();
+    }
+
 
     public Long getId() {
         return id;

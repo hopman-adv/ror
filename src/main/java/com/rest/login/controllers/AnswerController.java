@@ -43,9 +43,11 @@ public class AnswerController {
     @Autowired
     AnswerService answerService;
 
-    @GetMapping("/users/{userId}/boards/{boardId}")
+    @GetMapping("/users/{userId}/clients/{clientId}/evaluations/{evalId}/boards/{boardId}/answers")
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.hasUserId(authentication,#userId)")
-    public ResponseEntity<MessageResponse> retrieveAnswersByBoardId(@PathVariable Long userId, @PathVariable Long boardId) {
-        return answerService.getAllAnswersFromBoard(boardId, userId);
+    public ResponseEntity<MessageResponse> retrieveAnswersByBoardId(@PathVariable Long userId, @PathVariable Long clientId, @PathVariable Long evalId, @PathVariable Long boardId) {
+        List<AnswerDto> answerDtos = answerService.getAllAnswersDTOsFromBoard(userId, clientId, evalId, boardId);
+
+        return ResponseEntity.ok(createMessageResponseWithAnswerDTOs(answerDtos));
     }
 }

@@ -21,6 +21,24 @@ public class BoardAndAnswerOperations {
 
     Logger log = LoggerFactory.getLogger(BoardAndAnswerOperations.class);
 
+    public JsonPath getAllBoards(Long clientId, Long evalId) {
+        return given().header("Authorization", "Bearer "+ TOKEN)
+                .relaxedHTTPSValidation()
+                .contentType(ContentType.JSON)
+                .when().
+                get("https://localhost:8443/api/data/users/{userId}/clients/{clientId}/evaluations/{evalId}/boards/", USER_ID, clientId, evalId)
+                .jsonPath();
+    }
+
+    public JsonPath getAllAnswers(Long clientId, Long evalId, Long boardId) {
+        return given().header("Authorization", "Bearer "+ TOKEN)
+                .relaxedHTTPSValidation()
+                .contentType(ContentType.JSON)
+                .when().
+                get("https://localhost:8443/api/data/users/{userId}/clients/{clientId}/evaluations/{evalId}/boards/{boardId}/answers", USER_ID, clientId, evalId, boardId)
+                .jsonPath();
+    }
+
     private JsonPath getAnswersFromBoard(Long boardId) {
         return given().header("Authorization", "Bearer "+ TOKEN)
                 .relaxedHTTPSValidation()

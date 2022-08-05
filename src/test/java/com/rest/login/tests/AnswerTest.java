@@ -1,7 +1,6 @@
 package com.rest.login.tests;
 
 import com.rest.login.data.UserSession;
-import com.rest.login.enums.EResponses;
 import com.rest.login.operations.BoardAndAnswerOperations;
 import com.rest.login.operations.ClientOperations;
 import com.rest.login.operations.EvaluationOperations;
@@ -17,15 +16,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Map;
+
 import static com.rest.login.TestUtils.getClientId;
 import static com.rest.login.enums.EResponses.LISTING_ALL_BOARDS;
-import static com.rest.login.tests.UserSignupTest.USER_NAME;
+import static com.rest.login.enums.EResponses.LISTING_ANSWERS_FROM_BOARD;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 @Slf4j
 @SpringBootTest
-public class BoardTest {
+public class AnswerTest {
 
     static String AUTH_URL = "https://localhost:8443/api/auth/";
     static String BASE_URL = "https://localhost:8443/api/data/";
@@ -47,10 +48,10 @@ public class BoardTest {
     private BoardRepository boardRepository;
 
     @Autowired
-            private BoardAndAnswerOperations boardAndAnswerOperations;
+    private BoardAndAnswerOperations boardAndAnswerOperations;
 
 
-    Logger log = LoggerFactory.getLogger(BoardTest.class);
+    Logger log = LoggerFactory.getLogger(AnswerTest.class);
 
     JsonPath client = null;
     JsonPath client2 = null;
@@ -69,13 +70,23 @@ public class BoardTest {
     }
 
     @Test
-    void getAllBoardsFromEvaluation() {
+    void getAllAnswersFromBoard() {
         Long clientId = getClientId(client);
         JsonPath evaluation = evaluationOperations.createEvaluationWithDescription(clientId);
         Long evalId = evaluation.getLong("evaluation.id");
+        Long boardId = boardAndAnswerOperations.getAllBoards(clientId, evalId).getLong("boards[0].id");
+        log.info("Board ID: "+boardId.toString());
 
-        JsonPath json = boardAndAnswerOperations.getAllBoards(clientId, evalId);
-        assertThat(json.getString("message"), equalTo(LISTING_ALL_BOARDS.getMessage()));
-        assertThat(json.getList("boards").size(), equalTo(10));
+        JsonPath boards = boardAndAnswerOperations.getAllAnswers(clientId, evalId, boardId);
+        log.info(boards.prettify());
+
+        assertThat(boards.getString("message"), equalTo(LISTING_ANSWERS_FROM_BOARD.getMessage()));
+        assertThat(boards.getList("answers").size(), equalTo(1));
+
+        assertThat(boards.getLong("answers[0].evaluationId"), equalTo(evalId));
+        assertThat(boards.getLong("answers[0].boardId"), equalTo(boardId));
+        assertThat(boards.getLong("answers[0].id"), equalTo(boardId));
     }
+
+
 }

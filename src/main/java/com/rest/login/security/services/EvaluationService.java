@@ -38,9 +38,13 @@ public class EvaluationService {
                 .collect(Collectors.toList());
     }
 
-    public EvaluationDTO getEvaluationDTOByClientIdAndEvalId(Long clientId, Long evaluationId) throws NoSuchElementException {
+    public EvaluationDTO getEvaluationDTOByClientIdAndEvalId(Long userId, Long clientId, Long evaluationId) throws NoSuchElementException {
+        Long authorizedClientId = clientService.getClientById(clientId, userId).getId();
         List<EvaluationDTO> list = getAllEvaluationsDTO();
-        return list.stream().filter(evaluation -> Objects.equals(evaluation.getClientId(), clientId) && Objects.equals(evaluation.getId(), evaluationId))
+
+        return list.stream().filter(
+                        evaluation -> Objects.equals(evaluation.getClientId(), authorizedClientId)
+                                && Objects.equals(evaluation.getId(), evaluationId))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException(EVALUATION_NOT_FOUND.getMessage()));
     }
@@ -125,10 +129,10 @@ public class EvaluationService {
     }
 
     public EvaluationDTO editEvaluation(Client client, Long evalId, AddEvaluationRequest addEvaluationRequest)
-            throws DataAccessResourceFailureException{
+            throws DataAccessResourceFailureException {
         Evaluation evaluation = evaluationRepository.getById(evalId);
 
-        if(!Objects.equals(evaluation.getClient().getId(), client.getId())){
+        if (!Objects.equals(evaluation.getClient().getId(), client.getId())) {
             throw new DataAccessResourceFailureException(WRONG_CLIENT_NUMBER.getMessage());
         }
         evaluation.setDescription_info(addEvaluationRequest.getDescription());
@@ -138,10 +142,10 @@ public class EvaluationService {
     }
 
     public void deleteEvaluation(Client client, Long evalId)
-            throws DataAccessResourceFailureException{
+            throws DataAccessResourceFailureException {
         Evaluation evaluation = evaluationRepository.getById(evalId);
 
-        if(!Objects.equals(evaluation.getClient().getId(), client.getId())){
+        if (!Objects.equals(evaluation.getClient().getId(), client.getId())) {
             throw new DataAccessResourceFailureException(WRONG_CLIENT_NUMBER.getMessage());
         }
         evaluationRepository.deleteById(evaluation.getId());

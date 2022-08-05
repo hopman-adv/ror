@@ -1,9 +1,11 @@
 package com.rest.login.security.services;
 
 import com.rest.login.dto.AnswerDto;
+import com.rest.login.dto.EvaluationDTO;
 import com.rest.login.models.Answer;
 import com.rest.login.models.Board;
 import com.rest.login.payload.response.MessageResponse;
+import com.rest.login.repository.AnswerRepository;
 import com.rest.login.repository.BoardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,24 +23,35 @@ import static com.rest.login.payload.response.MessageResponse.createMessageRespo
 @Service
 public class AnswerService {
 
-	@Autowired
-	private BoardService boardService;
+    @Autowired
+    private BoardService boardService;
 
-public ResponseEntity<MessageResponse> getAllAnswersFromBoard(Long boardId, Long userId) {
-	Board board = null;
-	try {
-		board = boardService.getBoardById(boardId);
-	} catch (EntityNotFoundException | NoSuchElementException e) {
-		return ResponseEntity.badRequest().body(new MessageResponse(BOARD_NOT_FOUND.getMessage()));
-	}
-	//Kontrola přístupu ke klientovi!
-	if (!Objects.equals(board.getEvaluation().getClient().getUser().getId(), userId)) {
-		return ResponseEntity.badRequest().body(new MessageResponse(CLIENT_OWNED_BY_DIFFERENT_USER.getMessage()));
-	}
-	List<Answer> answers = board.getAnswers();
-	List<AnswerDto> listDtos = answers.stream()
-			.map(answer -> new AnswerDto(answer.getId(), answer.getAnswer_text(), answer.getBoard()))
-			.collect(Collectors.toList());
-	return ResponseEntity.ok().body(createMessageResponseWithAnswerDTOs(LISTING_ANSWERS_FROM_BOARD.getMessage(), listDtos));
-}
+    @Autowired
+    ClientService clientService;
+
+    @Autowired
+    EvaluationService evaluationService;
+
+    @Autowired
+    AnswerRepository answerRepository;
+
+    private List<Answer> getAllAnswersByBoardId(Long boardId) {
+        List<Answer> answers = answerRepository.findByBoard_id(boardId);
+        if(answers.size() <= 0) {
+            throw new NoSuchElementException(ANSWER_NOT_FOUND.getMessage());
+        }
+        return answers;
+    }
+
+    public List<AnswerDto> getAllAnswersDTOsFromBoard(Long userId, Long clientId, Long evalId, Long boardId) {
+        Long authorizedBoardId = boardService.getBoardById(userId, clientId, evalId, boardId).getId();
+
+        return getAllAnswersByBoardId(authorizedBoardId).stream()
+                .map(this::answerToAnswerDTO)
+                .collect(Collectors.toList());
+    }
+
+    private AnswerDto answerToAnswerDTO(Answer answer) {
+        return new AnswerDto(answer);
+    }
 }

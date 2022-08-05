@@ -139,8 +139,6 @@ public class ClientOperations {
         return json;
     }
 
-    //TODO: Client requests...
-
     public JsonPath createAndReturnRandomNameClient() {
         String name = fake.getName();
         log.info("NAME: "+name);
