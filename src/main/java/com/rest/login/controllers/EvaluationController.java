@@ -76,7 +76,7 @@ public class EvaluationController {
     public ResponseEntity<MessageResponse> createEvaluation(@Valid @RequestBody AddEvaluationRequest addEvaluationRequest, @PathVariable Long id, @PathVariable Long clientId) {
         Client client = clientService.getClientById(clientId, id);
 
-        EvaluationDTO evaluationDTO = new EvaluationDTO(evaluationService.createEvaluation(client, id, addEvaluationRequest));
+        EvaluationDTO evaluationDTO = new EvaluationDTO(evaluationService.createEvaluation(client, addEvaluationRequest));
         return ResponseEntity.ok(new MessageResponse(EVALUATION_ADDED.getMessage(), evaluationDTO));
     }
 
@@ -85,7 +85,7 @@ public class EvaluationController {
     public ResponseEntity<MessageResponse> createEvaluation(@PathVariable Long id, @PathVariable Long clientId) {
         Client client = clientService.getClientById(clientId, id);
 
-        EvaluationDTO evaluationDTO = new EvaluationDTO(evaluationService.createEvaluation(client, id, null));
+        EvaluationDTO evaluationDTO = new EvaluationDTO(evaluationService.createEvaluation(client, null));
         return ResponseEntity.ok(new MessageResponse(EVALUATION_ADDED.getMessage(), evaluationDTO));
     }
 

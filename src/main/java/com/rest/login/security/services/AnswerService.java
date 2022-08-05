@@ -37,21 +37,51 @@ public class AnswerService {
 
     private List<Answer> getAllAnswersByBoardId(Long boardId) {
         List<Answer> answers = answerRepository.findByBoard_id(boardId);
-        if(answers.size() <= 0) {
+        if (answers.size() <= 0) {
             throw new NoSuchElementException(ANSWER_NOT_FOUND.getMessage());
         }
         return answers;
     }
 
     public List<AnswerDto> getAllAnswersDTOsFromBoard(Long userId, Long clientId, Long evalId, Long boardId) {
-        Long authorizedBoardId = boardService.getBoardById(userId, clientId, evalId, boardId).getId();
+        Long authorizedBoardId = boardService.getAuthorizedBoardId(userId, clientId, evalId, boardId);
 
         return getAllAnswersByBoardId(authorizedBoardId).stream()
                 .map(this::answerToAnswerDTO)
                 .collect(Collectors.toList());
     }
 
+    public AnswerDto createAnswer(Long userId, Long clientId, Long evalId, Long boardId) {
+        Board board = boardService.getBoardById(userId, clientId, evalId, boardId);
+        Answer answer = new Answer();
+        answer.setBoard(board);
+
+        return new AnswerDto(answerRepository.save(answer));
+    }
+
+    public AnswerDto editAnswer(Long userId, Long clientId, Long evalId, Long boardId, Long answerId, String text) {
+        Answer answer = getAnswerById(userId, clientId, evalId, boardId, answerId);
+        answer.setAnswer_text(text);
+
+        return new AnswerDto(answerRepository.save(answer));
+    }
+
+    public void deleteAnswer(Long userId, Long clientId, Long evalId, Long boardId, Long answerId) {
+        Answer answer = getAnswerById(userId, clientId, evalId, boardId, answerId);
+
+        answerRepository.delete(answer);
+    }
+
     private AnswerDto answerToAnswerDTO(Answer answer) {
         return new AnswerDto(answer);
+    }
+
+    private Answer getAnswerById(Long userId, Long clientId, Long evalId, Long boardId, Long answerId) {
+        Long authorizedBoardId = boardService.getAuthorizedBoardId(userId, clientId, evalId, boardId);
+
+        return getAllAnswersByBoardId(authorizedBoardId).stream()
+                .filter(answer -> Objects.equals(answer.getId(), answerId))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException(ANSWER_NOT_FOUND.getMessage()));
     }
 }

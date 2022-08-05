@@ -59,4 +59,7 @@ public class BoardService {
                 .orElseThrow(() -> new NoSuchElementException(BOARD_NOT_FOUND.getMessage()));
     }
 
+    public Long getAuthorizedBoardId(Long userId, Long clientId, Long evalId, Long boardId) {
+        return getBoardById(userId, clientId, evalId, boardId).getId();
+    }
 }

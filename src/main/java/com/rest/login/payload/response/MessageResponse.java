@@ -23,6 +23,8 @@ public class MessageResponse {
     @JsonProperty("clients")
     private List<ClientDTO> clientDTOsList;
     private List<EvaluationDTO> evaluationsList;
+    @JsonProperty("answer")
+    private AnswerDto answerDto;
     @JsonProperty("answers")
     private List<AnswerDto> answerDtoList;
     private EvaluationDTO evaluation;
@@ -50,6 +52,11 @@ public class MessageResponse {
     public MessageResponse(String message, UserDetails userDetails) {
         this.message = message;
         this.userDetails = userDetails;
+    }
+
+    public MessageResponse(String message, AnswerDto answerDto) {
+        this.message = message;
+        this.answerDto = answerDto;
     }
 
     public static MessageResponse createMessageResponseWithUserDetailsList(List<UserDetails> userDetailsList) {

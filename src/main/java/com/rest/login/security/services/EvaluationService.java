@@ -103,7 +103,7 @@ public class EvaluationService {
         });
     }
 
-    public Evaluation createEvaluation(Client client, Long userId, AddEvaluationRequest addEvaluationRequest) {
+    public Evaluation createEvaluation(Client client, AddEvaluationRequest addEvaluationRequest) {
         Evaluation evaluation;
         if (addEvaluationRequest == null) {
             evaluation = createBasicEvaluation(client);
@@ -149,7 +149,5 @@ public class EvaluationService {
             throw new DataAccessResourceFailureException(WRONG_CLIENT_NUMBER.getMessage());
         }
         evaluationRepository.deleteById(evaluation.getId());
-
     }
-
 }

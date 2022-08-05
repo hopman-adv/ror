@@ -21,6 +21,10 @@ public enum EResponses {
     EVALUATION_DELETED("Evaluation was successfully deleted."),
     NO_EVALUATIONS_FOR_CLIENT("Client does not have any evaluations created!"),
     LISTING_EVALUATIONS("Listing client's evaluations!"),
+    ANSWER_CREATED("New answer was succcessfully created."),
+    ANSWER_NOT_FOUND("Answer was not found."),
+    ANSWER_UPDATED("Answer was successfully updated."),
+    ANSWER_DELETED("Answer was successfully deleted."),
     USERNAME_TAKEN("Error: Username is already taken!"),
     EMAIL_ALREADY_USED("Error: Email is already in use!"),
     ROLE_NOT_FOUND("Error: Role is not found."),
@@ -28,11 +32,10 @@ public enum EResponses {
     LOGOUT_SUCCESSFUL("Log out successful!"),
     BOARD_NOT_FOUND("Board was not found."),
     LISTING_ALL_BOARDS("All boards rom evaluation."),
-    ANSWER_NOT_FOUND("Answer was not found."),
-    CLIENT_OWNED_BY_DIFFERENT_USER("Unauthorized access - client owned by different user!"),
     LISTING_ANSWERS_FROM_BOARD("Listing all answers from board!"),
     MISSING_NAME_IN_BODY("Error: Missing name in body!"),
     VALIDATION_FAILED("Validation failed for request body."),
+    CLIENT_OWNED_BY_DIFFERENT_USER("Unauthorized access - client owned by different user!"),
     ID_NULL("Provided ID is null."),
     UNAUTHORIZED_ACCESS("Unauthorized access to resource.");
 
